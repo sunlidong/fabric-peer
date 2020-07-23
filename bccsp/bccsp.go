@@ -87,9 +87,11 @@ type DecrypterOpts interface{}
 
 // BCCSP is the blockchain cryptographic service provider that offers
 // the implementation of cryptographic standards and algorithms.
+// BCCSP是区块链加密服务提供者，提供加密标准和算法的实现。
 type BCCSP interface {
 
 	// KeyGen generates a key using opts.
+	// KeyGen使用opts生成密钥。
 	KeyGen(opts KeyGenOpts) (k Key, err error)
 
 	// KeyDeriv derives a key from k using opts.

@@ -44,8 +44,12 @@ func main() {
 	viper.BindPFlag("logging_level", mainFlags.Lookup("logging-level"))
 	mainFlags.MarkHidden("logging-level")
 
+	// 设置环境变量和一些固定参数 以上
+
+	// TODO  获取工厂对象  返回一个全局 bsscp 对象
 	cryptoProvider := factory.GetDefault()
 
+	// 添加 version 子命令
 	mainCmd.AddCommand(version.Cmd())
 	mainCmd.AddCommand(node.Cmd())
 	mainCmd.AddCommand(chaincode.Cmd(nil, cryptoProvider))

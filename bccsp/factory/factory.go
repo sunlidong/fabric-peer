@@ -21,6 +21,7 @@ import (
 
 	"fabricbypeer/bccsp"
 	"fabricbypeer/common/flogging"
+
 	"github.com/pkg/errors"
 )
 
@@ -57,12 +58,18 @@ type BCCSPFactory interface {
 }
 
 // GetDefault returns a non-ephemeral (long-term) BCCSP
+// GetDefault返回一个非临时(长期)BCCSP
 func GetDefault() bccsp.BCCSP {
+	// 如果全局的 DefaultBCCSP 对象是空
 	if DefaultBCCSP == nil {
+
 		logger.Debug("Before using BCCSP, please call InitFactories(). Falling back to bootBCCSP.")
+		// 单例模式 -- 生成  全局对象  DefaultBCCSP
 		bootBCCSPInitOnce.Do(func() {
 			var err error
+			//  声明 SWFactory 对象
 			f := &SWFactory{}
+			// 
 			bootBCCSP, err = f.Get(&FactoryOpts{
 				ProviderName: "SW",
 				SwOpts: &SwOpts{

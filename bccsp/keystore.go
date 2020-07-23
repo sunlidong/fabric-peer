@@ -19,6 +19,10 @@ package bccsp
 // It allows to store and retrieve bccsp.Key objects.
 // The KeyStore can be read only, in that case StoreKey will return
 // an error.
+//密钥存储库表示用于加密密钥的存储系统。
+//允许存储和检索bccsp。关键对象。
+//密钥存储库只能读取，在这种情况下，StoreKey将返回
+// / /一个错误。
 type KeyStore interface {
 
 	// ReadOnly returns true if this KeyStore is read only, false otherwise.

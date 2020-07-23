@@ -18,6 +18,7 @@ package factory
 import (
 	"fabricbypeer/bccsp"
 	"fabricbypeer/bccsp/sw"
+
 	"github.com/pkg/errors"
 )
 
@@ -35,19 +36,29 @@ func (f *SWFactory) Name() string {
 }
 
 // Get returns an instance of BCCSP using Opts.
+// Get使用Opts返回BCCSP的实例。
 func (f *SWFactory) Get(config *FactoryOpts) (bccsp.BCCSP, error) {
 	// Validate arguments
+
+	// 判断是否是 nil
 	if config == nil || config.SwOpts == nil {
 		return nil, errors.New("Invalid config. It must not be nil.")
 	}
 
+	// 接参数
 	swOpts := config.SwOpts
 
+	// 生成 ks 4934
 	var ks bccsp.KeyStore
+
+	// 判断  switch
 	switch {
+
 	case swOpts.Ephemeral:
 		ks = sw.NewDummyKeyStore()
+
 	case swOpts.FileKeystore != nil:
+
 		fks, err := sw.NewFileBasedKeyStore(nil, swOpts.FileKeystore.KeyStorePath, false)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to initialize software key store")
@@ -60,6 +71,7 @@ func (f *SWFactory) Get(config *FactoryOpts) (bccsp.BCCSP, error) {
 		ks = sw.NewDummyKeyStore()
 	}
 
+	// 生成 ks 对象， ks 对象是 秘钥储存秘钥 调用  NewWithParams  三个参数： 返回基于软件的BCCSP的一个新实例
 	return sw.NewWithParams(swOpts.SecLevel, swOpts.HashFamily, ks)
 }
 
