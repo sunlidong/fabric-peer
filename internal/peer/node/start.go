@@ -20,12 +20,6 @@ import (
 	"syscall"
 	"time"
 
-	docker "github.com/fsouza/go-dockerclient"
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/common"
-	cb "github.com/hyperledger/fabric-protos-go/common"
-	discprotos "github.com/hyperledger/fabric-protos-go/discovery"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp/factory"
 	"fabricbypeer/common/cauthdsl"
 	ccdef "fabricbypeer/common/chaincode"
@@ -92,6 +86,13 @@ import (
 	"fabricbypeer/msp"
 	"fabricbypeer/msp/mgmt"
 	"fabricbypeer/protoutil"
+
+	docker "github.com/fsouza/go-dockerclient"
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/common"
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	discprotos "github.com/hyperledger/fabric-protos-go/discovery"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -113,6 +114,7 @@ func startCmd() *cobra.Command {
 	return nodeStartCmd
 }
 
+// 启动节点
 var nodeStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Starts the node.",
@@ -123,6 +125,8 @@ var nodeStartCmd = &cobra.Command{
 		}
 		// Parsing of the command line is done so silence cmd usage
 		cmd.SilenceUsage = true
+		fmt.Println("----------------------------------=> peer node server ")
+		// 这里是启动服务的主要程序
 		return serve(args)
 	},
 }
@@ -849,8 +853,11 @@ func serve(args []string) error {
 		serve <- grpcErr
 	}()
 
+	//
+	fmt.Println("---------------------------------------------peer node start successful")
 	// Block until grpc server exits
 	return <-serve
+
 }
 
 func handleSignals(handlers map[os.Signal]func()) {

@@ -88,7 +88,9 @@ const OfficialPath = "/etc/hyperledger/fabric"
 // Viper instance
 //----------------------------------------------------------------------------------
 func InitViper(v *viper.Viper, configName string) error {
+	//  get  环境变量   FABRIC_CFG_PATH
 	var altPath = os.Getenv("FABRIC_CFG_PATH")
+	// nil
 	if altPath != "" {
 		// If the user has overridden the path with an envvar, its the only path
 		// we will consider
@@ -96,7 +98,7 @@ func InitViper(v *viper.Viper, configName string) error {
 		if !dirExists(altPath) {
 			return fmt.Errorf("FABRIC_CFG_PATH %s does not exist", altPath)
 		}
-
+		//
 		AddConfigPath(v, altPath)
 	} else {
 		// If we get here, we should use the default paths in priority order:
@@ -107,6 +109,7 @@ func InitViper(v *viper.Viper, configName string) error {
 		// CWD
 		AddConfigPath(v, "./")
 
+		// 如果 altPath 是空 ，那么就设置 OfficialPath ： /etc/hyperledger/fabric
 		// And finally, the official path
 		if dirExists(OfficialPath) {
 			AddConfigPath(v, OfficialPath)
@@ -114,6 +117,7 @@ func InitViper(v *viper.Viper, configName string) error {
 	}
 
 	// Now set the configuration file.
+	// 设置配置名称
 	if v != nil {
 		v.SetConfigName(configName)
 	} else {

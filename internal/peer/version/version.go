@@ -39,6 +39,8 @@ var cobraCommand = &cobra.Command{
 		cmd.SilenceUsage = true
 		// 输出 GetInfo 函数
 		fmt.Print(GetInfo())
+
+		fmt.Println("-------@调试@-40000010001")
 		return nil
 	},
 }

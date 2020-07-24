@@ -15,8 +15,6 @@ import (
 	"strings"
 	"time"
 
-	pcommon "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/bccsp/factory"
 	"fabricbypeer/common/channelconfig"
@@ -27,6 +25,9 @@ import (
 	"fabricbypeer/msp"
 	mspmgmt "fabricbypeer/msp/mgmt"
 	"fabricbypeer/protoutil"
+
+	pcommon "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -96,6 +97,7 @@ func init() {
 // InitConfig initializes viper config
 func InitConfig(cmdRoot string) error {
 
+	fmt.Println("---------------------------------------------------------=>", cmdRoot)
 	err := config.InitViper(nil, cmdRoot)
 	if err != nil {
 		return err
@@ -120,12 +122,17 @@ func InitConfig(cmdRoot string) error {
 // InitCrypto initializes crypto for this peer
 func InitCrypto(mspMgrConfigDir, localMSPID, localMSPType string) error {
 	// Check whether msp folder exists
+	// 检查 msp 目录是否存在
+	//TODO
 	fi, err := os.Stat(mspMgrConfigDir)
+	//检查路径 msp
+
 	if os.IsNotExist(err) || !fi.IsDir() {
 		// No need to try to load MSP from folder which is not available
 		return errors.Errorf("cannot init crypto, folder \"%s\" does not exist", mspMgrConfigDir)
 	}
 	// Check whether localMSPID exists
+	// msp
 	if localMSPID == "" {
 		return errors.New("the local MSP must have an ID")
 	}
@@ -278,6 +285,8 @@ func configFromEnv(prefix string) (address, override string, clientConfig comm.C
 }
 
 func InitCmd(cmd *cobra.Command, args []string) {
+
+	// 初始化配置文件
 	err := InitConfig(CmdRoot)
 	if err != nil { // Handle errors reading the config file
 		mainLogger.Errorf("Fatal error when initializing %s config : %s", CmdRoot, err)
@@ -286,6 +295,9 @@ func InitCmd(cmd *cobra.Command, args []string) {
 
 	// read in the legacy logging level settings and, if set,
 	// notify users of the FABRIC_LOGGING_SPEC env variable
+	//
+	fmt.Println("---------------------------------------------------------=>")
+	// 初始化日志级别
 	var loggingLevel string
 	if viper.GetString("logging_level") != "" {
 		loggingLevel = viper.GetString("logging_level")
@@ -296,9 +308,14 @@ func InitCmd(cmd *cobra.Command, args []string) {
 		mainLogger.Warning("CORE_LOGGING_LEVEL is no longer supported, please use the FABRIC_LOGGING_SPEC environment variable")
 	}
 
+	loggingLevel = viper.GetString("chaincode.logging.level")
+
+	fmt.Println("---------------------------------------------------------=>", loggingLevel)
+
 	loggingSpec := os.Getenv("FABRIC_LOGGING_SPEC")
 	loggingFormat := os.Getenv("FABRIC_LOGGING_FORMAT")
 
+	// flogging init
 	flogging.Init(flogging.Config{
 		Format:  loggingFormat,
 		Writer:  logOutput,
@@ -309,9 +326,15 @@ func InitCmd(cmd *cobra.Command, args []string) {
 	var mspMgrConfigDir = config.GetPath("peer.mspConfigPath")
 	var mspID = viper.GetString("peer.localMspId")
 	var mspType = viper.GetString("peer.localMspType")
+	// by
+	fmt.Println("--------------------------------------------------------=>mspMgrConfigDir:", mspMgrConfigDir)
+	fmt.Println("--------------------------------------------------------=>mspID:", mspID)
+	fmt.Println("--------------------------------------------------------=>mspType:", mspType)
+
 	if mspType == "" {
 		mspType = msp.ProviderTypeToString(msp.FABRIC)
 	}
+	// 初始化 crypto 目录
 	err = InitCrypto(mspMgrConfigDir, mspID, mspType)
 	if err != nil { // Handle errors reading the config file
 		mainLogger.Errorf("Cannot run peer because %s", err.Error())

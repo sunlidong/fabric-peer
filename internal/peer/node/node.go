@@ -10,6 +10,7 @@ import (
 
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/internal/peer/common"
+
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +22,8 @@ const (
 var logger = flogging.MustGetLogger("nodeCmd")
 
 // Cmd returns the cobra command for Node
+
+// node 节点
 func Cmd() *cobra.Command {
 	nodeCmd.AddCommand(startCmd())
 	nodeCmd.AddCommand(resetCmd())

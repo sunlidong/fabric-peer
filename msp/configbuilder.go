@@ -12,10 +12,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/msp"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/bccsp/factory"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -93,10 +94,8 @@ func getPemMaterialFromDir(dir string) ([][]byte, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read directory %s", dir)
 	}
-
 	for _, f := range files {
 		fullName := filepath.Join(dir, f.Name())
-
 		f, err := os.Stat(fullName)
 		if err != nil {
 			mspLogger.Warningf("Failed to stat %s: %s", fullName, err)
@@ -116,7 +115,6 @@ func getPemMaterialFromDir(dir string) ([][]byte, error) {
 
 		content = append(content, item)
 	}
-
 	return content, nil
 }
 
@@ -157,6 +155,7 @@ func SetupBCCSPKeystoreConfig(bccspConfig *factory.FactoryOpts, keystoreDir stri
 // configuration for the MSP in the specified
 // directory, with the specified ID and type
 func GetLocalMspConfigWithType(dir string, bccspConfig *factory.FactoryOpts, ID, mspType string) (*msp.MSPConfig, error) {
+	// Get
 	switch mspType {
 	case ProviderTypeToString(FABRIC):
 		return GetLocalMspConfig(dir, bccspConfig, ID)
@@ -168,6 +167,7 @@ func GetLocalMspConfigWithType(dir string, bccspConfig *factory.FactoryOpts, ID,
 }
 
 func GetLocalMspConfig(dir string, bccspConfig *factory.FactoryOpts, ID string) (*msp.MSPConfig, error) {
+
 	signcertDir := filepath.Join(dir, signcerts)
 	keystoreDir := filepath.Join(dir, keystore)
 	bccspConfig = SetupBCCSPKeystoreConfig(bccspConfig, keystoreDir)
