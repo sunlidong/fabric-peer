@@ -10,10 +10,12 @@ import (
 	"sync"
 
 	"fabricbypeer/core/ledger"
+
 	"github.com/pkg/errors"
 )
 
 // HandlerRegistry maintains chaincode Handler instances.
+// 维护链码处理程序实例
 type HandlerRegistry struct {
 	allowUnsolicitedRegistration bool // from cs.userRunsCC
 

@@ -155,6 +155,7 @@ func ExtractRawCertificateFromContext(ctx context.Context) []byte {
 }
 
 // GetLocalIP returns the non loopback local IP of the host
+// 获取本地地址
 func GetLocalIP() (string, error) {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {

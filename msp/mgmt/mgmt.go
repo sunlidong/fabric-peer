@@ -15,6 +15,7 @@ import (
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/msp"
 	"fabricbypeer/msp/cache"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -146,16 +147,19 @@ func GetLocalMSP(cryptoProvider bccsp.BCCSP) msp.MSP {
 
 func loadLocaMSP(bccsp bccsp.BCCSP) msp.MSP {
 	// determine the type of MSP (by default, we'll use bccspMSP)
+	// 获取 localMspType 地址
 	mspType := viper.GetString("peer.localMspType")
 	if mspType == "" {
 		mspType = msp.ProviderTypeToString(msp.FABRIC)
 	}
 
+	//  newOpts
 	newOpts, found := msp.Options[mspType]
 	if !found {
 		mspLogger.Panicf("msp type " + mspType + " unknown")
 	}
 
+	// msp 实例  mspInst
 	mspInst, err := msp.New(newOpts, bccsp)
 	if err != nil {
 		mspLogger.Fatalf("Failed to initialize local MSP, received err %+v", err)

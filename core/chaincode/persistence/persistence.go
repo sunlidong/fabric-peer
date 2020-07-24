@@ -114,6 +114,7 @@ type Store struct {
 
 // NewStore creates a new chaincode persistence store using
 // the provided path on the filesystem.
+// // NewStore使用创建一个新的链码持久性存储
 func NewStore(path string) *Store {
 	store := &Store{
 		Path:       path,

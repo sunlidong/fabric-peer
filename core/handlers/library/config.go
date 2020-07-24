@@ -30,6 +30,7 @@ type HandlerConfig struct {
 }
 
 func LoadConfig() (Config, error) {
+	//
 	var authFilters, decorators []*HandlerConfig
 	if err := mapstructure.Decode(viper.Get("peer.handlers.authFilters"), &authFilters); err != nil {
 		return Config{}, err

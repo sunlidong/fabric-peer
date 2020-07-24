@@ -8,6 +8,7 @@ package msp
 
 import (
 	"fabricbypeer/bccsp"
+
 	"github.com/pkg/errors"
 )
 
@@ -46,6 +47,7 @@ type IdemixNewOpts struct {
 }
 
 // New create a new MSP instance depending on the passed Opts
+// 根据传递的选项创建一个新的MSP实例
 func New(opts NewOpts, cryptoProvider bccsp.BCCSP) (MSP, error) {
 	switch opts.(type) {
 	case *BCCSPNewOpts:

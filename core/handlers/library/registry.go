@@ -72,6 +72,7 @@ func InitRegistry(c Config) Registry {
 }
 
 // loadHandlers loads the configured handlers
+// 加载配置的处理程序
 func (r *registry) loadHandlers(c Config) {
 	for _, config := range c.AuthFilters {
 		r.evaluateModeAndLoad(config, Auth)

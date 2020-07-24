@@ -44,6 +44,7 @@ type GRPCServer struct {
 
 // NewGRPCServer creates a new implementation of a GRPCServer given a
 // listen address
+// 新的GRPCServer实现
 func NewGRPCServer(address string, serverConfig ServerConfig) (*GRPCServer, error) {
 	if address == "" {
 		return nil, errors.New("missing address parameter")
@@ -70,14 +71,19 @@ func NewGRPCServerFromListener(listener net.Listener, serverConfig ServerConfig)
 	var serverOpts []grpc.ServerOption
 
 	secureConfig := serverConfig.SecOpts
+
+	// tls
 	if secureConfig.UseTLS {
 		//both key and cert are required
+		// //密钥和证书都需要
 		if secureConfig.Key != nil && secureConfig.Certificate != nil {
 			//load server public and private keys
+			// //加载服务器公钥和私钥
 			cert, err := tls.X509KeyPair(secureConfig.Certificate, secureConfig.Key)
 			if err != nil {
 				return nil, err
 			}
+			// store
 			grpcServer.serverCertificate.Store(cert)
 
 			//set up our TLS config
@@ -89,6 +95,7 @@ func NewGRPCServerFromListener(listener net.Listener, serverConfig ServerConfig)
 				return &cert, nil
 			}
 			//base server certificate
+			// / /服务器证书
 			grpcServer.tlsConfig = &tls.Config{
 				VerifyPeerCertificate:  secureConfig.VerifyCertificate,
 				GetCertificate:         getCert,
@@ -157,6 +164,7 @@ func NewGRPCServerFromListener(listener net.Listener, serverConfig ServerConfig)
 		serverOpts = append(serverOpts, grpc.StatsHandler(serverConfig.ServerStatsHandler))
 	}
 
+	// grpc.NewServer
 	grpcServer.server = grpc.NewServer(serverOpts...)
 
 	if serverConfig.HealthCheckEnabled {

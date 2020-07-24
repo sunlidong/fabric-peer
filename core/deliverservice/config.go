@@ -94,6 +94,7 @@ func LoadOverridesMap() (map[string]*orderers.Endpoint, error) {
 	return overrideMap, nil
 }
 
+// DELIVERsERVICEcONFIG
 func (c *DeliverServiceConfig) loadDeliverServiceConfig() {
 	c.PeerTLSEnabled = viper.GetBool("peer.tls.enabled")
 

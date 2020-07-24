@@ -30,6 +30,7 @@ import (
 
 	"fabricbypeer/core/comm"
 	"fabricbypeer/core/config"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -201,6 +202,7 @@ type Config struct {
 
 // GlobalConfig obtains a set of configuration from viper, build and returns
 // the config struct.
+// //配置结构。
 func GlobalConfig() (*Config, error) {
 	c := &Config{}
 	if err := c.load(); err != nil {
@@ -208,6 +210,8 @@ func GlobalConfig() (*Config, error) {
 	}
 	return c, nil
 }
+
+// peer 节点加载本地配置文件
 
 func (c *Config) load() error {
 	preeAddress, err := getLocalAddress()
@@ -304,21 +308,27 @@ func (c *Config) load() error {
 }
 
 // getLocalAddress returns the address:port the local peer is operating on.  Affected by env:peer.addressAutoDetect
+
+// 获取本地地址
 func getLocalAddress() (string, error) {
 	peerAddress := viper.GetString("peer.address")
 	if peerAddress == "" {
 		return "", fmt.Errorf("peer.address isn't set")
 	}
+
+	// net . split address
 	host, port, err := net.SplitHostPort(peerAddress)
 	if err != nil {
 		return "", errors.Errorf("peer.address isn't in host:port format: %s", peerAddress)
 	}
 
+	//	192.168.0.187
 	localIP, err := comm.GetLocalIP()
 	if err != nil {
 		peerLogger.Errorf("local IP address not auto-detectable: %s", err)
 		return "", err
 	}
+
 	autoDetectedIPAndPort := net.JoinHostPort(localIP, port)
 	peerLogger.Info("Auto-detected peer address:", autoDetectedIPAndPort)
 	// If host is the IPv4 address "0.0.0.0" or the IPv6 address "::",
@@ -399,6 +409,7 @@ func GetServerConfig() (comm.ServerConfig, error) {
 
 // GetClientCertificate returns the TLS certificate to use for gRPC client
 // connections
+//  返回 tls 证书
 func GetClientCertificate() (tls.Certificate, error) {
 	cert := tls.Certificate{}
 
@@ -435,6 +446,7 @@ func GetClientCertificate() (tls.Certificate, error) {
 		}
 	}
 	// get the keypair from the file system
+	// 获取证书 tls
 	clientKey, err := ioutil.ReadFile(keyPath)
 	if err != nil {
 		return cert, errors.WithMessage(err,

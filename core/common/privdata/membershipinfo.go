@@ -7,10 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 package privdata
 
 import (
-	"github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/msp"
 	"fabricbypeer/protoutil"
+
+	"github.com/hyperledger/fabric-protos-go/peer"
 )
 
 var logger = flogging.MustGetLogger("common.privdata")
@@ -22,6 +23,7 @@ type MembershipProvider struct {
 }
 
 // NewMembershipInfoProvider returns MembershipProvider
+// 返回成员资格提供程序
 func NewMembershipInfoProvider(selfSignedData protoutil.SignedData, identityDeserializerFunc func(chainID string) msp.IdentityDeserializer) *MembershipProvider {
 	return &MembershipProvider{selfSignedData: selfSignedData, IdentityDeserializerFactory: identityDeserializerFunc}
 }

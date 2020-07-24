@@ -28,6 +28,7 @@ type CredentialSupport struct {
 }
 
 // NewCredentialSupport creates a CredentialSupport instance.
+// t创建一个凭据支持实例。
 func NewCredentialSupport(rootCAs ...[]byte) *CredentialSupport {
 	return &CredentialSupport{
 		appRootCAsByChain: make(map[string][][]byte),
