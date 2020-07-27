@@ -9,6 +9,7 @@ package node
 import (
 	"fabricbypeer/core/ledger/kvledger"
 	"fabricbypeer/internal/peer/common"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,9 @@ var pauseChannelCmd = &cobra.Command{
 			return errors.New("Must supply channel ID")
 		}
 
+		// 获取  --信息
 		config := ledgerConfig()
+		//   rootpath, channel ID
 		return kvledger.PauseChannel(config.RootFSPath, channelID)
 	},
 }

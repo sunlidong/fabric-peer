@@ -76,6 +76,8 @@ func resetToGenesisBlk(ledgerDir string) error {
 	for lastFileNum > 0 {
 		filePath := deriveBlockfilePath(ledgerDir, lastFileNum)
 		logger.Infof("Deleting file number = [%d]", lastFileNum)
+
+		// os  remove
 		if err := os.Remove(filePath); err != nil {
 			return err
 		}

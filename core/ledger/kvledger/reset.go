@@ -8,11 +8,16 @@ package kvledger
 import (
 	"fabricbypeer/common/ledger/blkstorage/fsblkstorage"
 	"fabricbypeer/common/ledger/util/leveldbhelper"
+
 	"github.com/pkg/errors"
 )
 
 // ResetAllKVLedgers resets all ledger to the genesis block.
+
+// reset //重置所有KV分类账重置所有分类账到创世纪块。
 func ResetAllKVLedgers(rootFSPath string) error {
+
+	// 1 --
 	fileLockPath := fileLockPath(rootFSPath)
 	fileLock := leveldbhelper.NewFileLock(fileLockPath)
 	if err := fileLock.Lock(); err != nil {
@@ -23,9 +28,13 @@ func ResetAllKVLedgers(rootFSPath string) error {
 
 	logger.Info("Resetting all channel ledgers to genesis block")
 	logger.Infof("Ledger data folder from config = [%s]", rootFSPath)
+
+	// 2 --    dropDBs
 	if err := dropDBs(rootFSPath); err != nil {
 		return err
 	}
+	// 3 -- resetBlockStorage
+
 	if err := resetBlockStorage(rootFSPath); err != nil {
 		return err
 	}

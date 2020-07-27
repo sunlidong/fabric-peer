@@ -10,15 +10,16 @@ import (
 	"context"
 	"io/ioutil"
 
-	"github.com/golang/protobuf/proto"
-	cb "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/core/common/ccpackage"
 	"fabricbypeer/core/common/ccprovider"
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/internal/pkg/identity"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -118,6 +119,8 @@ func (i *Installer) setInput(args []string) {
 // install installs a chaincode deployment spec to "peer.address"
 // for use with lscc
 func (i *Installer) install() error {
+
+	// -- 1
 	ccPkgMsg, err := i.getChaincodePackageMessage()
 	if err != nil {
 		return err
@@ -223,6 +226,7 @@ func genChaincodeDeploymentSpec(cmd *cobra.Command, chaincodeName, chaincodeVers
 		return nil, err
 	}
 
+	//
 	cds, err := getChaincodeDeploymentSpec(spec, true)
 	if err != nil {
 		return nil, errors.WithMessagef(err, "error getting chaincode deployment spec for %s", chaincodeName)

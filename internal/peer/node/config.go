@@ -12,9 +12,11 @@ import (
 	coreconfig "fabricbypeer/core/config"
 	"fabricbypeer/core/ledger"
 	"fabricbypeer/core/ledger/util/couchdb"
+
 	"github.com/spf13/viper"
 )
 
+// 分类帐配置
 func ledgerConfig() *ledger.Config {
 	// set defaults
 	warmAfterNBlocks := 1

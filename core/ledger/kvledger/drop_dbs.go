@@ -22,15 +22,23 @@ func dropDBs(rootFSPath string) error {
 	// command fails before dropping the stateDB, peer cannot start with consistent data (if the
 	// user decides to start the peer without retrying the reset/rollback) as the stateDB would
 	// not be rebuilt.
+
+	// levelDB
 	if err := dropStateLevelDB(rootFSPath); err != nil {
 		return err
 	}
+
+	// db historyDB
 	if err := dropConfigHistoryDB(rootFSPath); err != nil {
 		return err
 	}
+
+	// db keep
 	if err := dropBookkeeperDB(rootFSPath); err != nil {
 		return err
 	}
+
+	//  db    drophistorydb
 	if err := dropHistoryDB(rootFSPath); err != nil {
 		return err
 	}

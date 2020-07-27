@@ -13,6 +13,7 @@ import (
 	"fabricbypeer/common/ledger/util"
 	"fabricbypeer/common/ledger/util/leveldbhelper"
 	"fabricbypeer/protoutil"
+
 	"github.com/pkg/errors"
 )
 
@@ -27,21 +28,26 @@ type rollbackMgr struct {
 
 // Rollback reverts changes made to the block store beyond a given block number.
 func Rollback(blockStorageDir, ledgerID string, targetBlockNum uint64, indexConfig *blkstorage.IndexConfig) error {
+
 	r, err := newRollbackMgr(blockStorageDir, ledgerID, indexConfig, targetBlockNum)
 	if err != nil {
 		return err
 	}
 	defer r.dbProvider.Close()
 
+	//  recod 341212
+	//
 	if err := recordHeightIfGreaterThanPreviousRecording(r.ledgerDir); err != nil {
 		return err
 	}
 
+	// 	块 索引   --
 	logger.Infof("Rolling back block index to block number [%d]", targetBlockNum)
 	if err := r.rollbackBlockIndex(); err != nil {
 		return err
 	}
 
+	//  块 文件 --
 	logger.Infof("Rolling back block files to block number [%d]", targetBlockNum)
 	if err := r.rollbackBlockFiles(); err != nil {
 		return err
@@ -90,7 +96,7 @@ func (r *rollbackMgr) rollbackBlockIndex() error {
 	// index keys to be added in the batch would be 80020. Even if a
 	// key takes 100 bytes (overestimation), the memory utilization
 	// of a batch of 10 blocks would be 7 MB only.
-	batchLimit := uint64(10)
+	batchLimit := uint64(10) // 固定每次回滚 10  个
 
 	// start each iteration of the loop with full range for deletion
 	// and shrink the range to batchLimit if the range is greater than batchLimit
@@ -168,7 +174,9 @@ func addIndexEntriesToBeDeleted(batch *leveldbhelper.UpdateBatch, blockInfo *ser
 }
 
 func (r *rollbackMgr) rollbackBlockFiles() error {
+
 	logger.Infof("Deleting checkpointInfo")
+	
 	if err := r.indexStore.db.Delete(blkMgrInfoKey, true); err != nil {
 		return err
 	}

@@ -10,8 +10,6 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/common"
 	"fabricbypeer/common/ledger/dataformat"
 	"fabricbypeer/common/ledger/util/leveldbhelper"
 	"fabricbypeer/core/ledger"
@@ -23,6 +21,9 @@ import (
 	"fabricbypeer/core/ledger/ledgerstorage"
 	"fabricbypeer/core/ledger/pvtdatastorage"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 )
@@ -551,6 +552,8 @@ func (s *idStore) createLedgerID(ledgerID string, gb *common.Block) error {
 }
 
 func (s *idStore) updateLedgerStatus(ledgerID string, newStatus msgs.Status) error {
+
+	//  -- 1
 	metadata, err := s.getLedgerMetadata(ledgerID)
 	if err != nil {
 		return err
@@ -564,6 +567,8 @@ func (s *idStore) updateLedgerStatus(ledgerID string, newStatus msgs.Status) err
 		return nil
 	}
 	metadata.Status = newStatus
+
+	// -- 2
 	metadataBytes, err := proto.Marshal(metadata)
 	if err != nil {
 		logger.Errorf("Error marshalling ledger metadata: %s", err)

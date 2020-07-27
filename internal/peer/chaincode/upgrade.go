@@ -11,10 +11,11 @@ import (
 	"errors"
 	"fmt"
 
-	protcommon "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/protoutil"
+
+	protcommon "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/spf13/cobra"
 )
 

@@ -9,19 +9,24 @@ package kvledger
 import (
 	"fabricbypeer/common/ledger/util/leveldbhelper"
 	"fabricbypeer/core/ledger/ledgerstorage"
+
 	"github.com/pkg/errors"
 )
 
 // RollbackKVLedger rollbacks a ledger to a specified block number
+
+// 回滚
 func RollbackKVLedger(rootFSPath, ledgerID string, blockNum uint64) error {
 	fileLockPath := fileLockPath(rootFSPath)
 	fileLock := leveldbhelper.NewFileLock(fileLockPath)
+	//
 	if err := fileLock.Lock(); err != nil {
 		return errors.Wrap(err, "as another peer node command is executing,"+
 			" wait for that command to complete its execution or terminate it before retrying")
 	}
 	defer fileLock.Unlock()
 
+	// 2 --
 	blockstorePath := BlockStorePath(rootFSPath)
 	if err := ledgerstorage.ValidateRollbackParams(blockstorePath, ledgerID, blockNum); err != nil {
 		return err
@@ -33,6 +38,8 @@ func RollbackKVLedger(rootFSPath, ledgerID string, blockNum uint64) error {
 	}
 
 	logger.Info("Rolling back ledger store")
+
+	// 先删除 后 回滚
 	if err := ledgerstorage.Rollback(blockstorePath, ledgerID, blockNum); err != nil {
 		return err
 	}

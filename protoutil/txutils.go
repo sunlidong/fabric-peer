@@ -350,6 +350,7 @@ func GetSignedProposal(prop *peer.Proposal, signer Signer) (*peer.SignedProposal
 	}
 
 	return &peer.SignedProposal{ProposalBytes: propBytes, Signature: signature}, nil
+
 }
 
 // MockSignedEndorserProposalOrPanic creates a SignedProposal with the

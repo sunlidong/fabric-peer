@@ -7,6 +7,7 @@ package node
 
 import (
 	"fabricbypeer/core/ledger/kvledger"
+
 	"github.com/spf13/cobra"
 )
 
@@ -19,6 +20,8 @@ var nodeResetCmd = &cobra.Command{
 	Short: "Resets the node.",
 	Long:  `Resets all channels to the genesis block. When the command is executed, the peer must be offline. When the peer starts after the reset, it will receive blocks starting with block number one from an orderer or another peer to rebuild the block store and state database.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		//  环境变量参数 --
 		config := ledgerConfig()
 		return kvledger.ResetAllKVLedgers(config.RootFSPath)
 	},

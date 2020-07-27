@@ -11,10 +11,11 @@ import (
 	"errors"
 	"fmt"
 
-	protcommon "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/protoutil"
+
+	protcommon "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/spf13/cobra"
 )
 
@@ -105,6 +106,7 @@ func instantiate(cmd *cobra.Command, cf *ChaincodeCmdFactory) (*protcommon.Envel
 // (hash) is printed to STDOUT for use by subsequent chaincode-related CLI
 // commands.
 func chaincodeDeploy(cmd *cobra.Command, args []string, cf *ChaincodeCmdFactory, cryptoProvider bccsp.BCCSP) error {
+
 	if channelID == "" {
 		return errors.New("The required parameter 'channelID' is empty. Rerun the command with -C flag")
 	}
