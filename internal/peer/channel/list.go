@@ -11,11 +11,12 @@ import (
 	"errors"
 	"fmt"
 
+	"fabricbypeer/core/scc/cscc"
+	"fabricbypeer/protoutil"
+
 	"github.com/golang/protobuf/proto"
 	common2 "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"fabricbypeer/core/scc/cscc"
-	"fabricbypeer/protoutil"
 	"github.com/spf13/cobra"
 )
 
@@ -43,6 +44,7 @@ func listCmd(cf *ChannelCmdFactory) *cobra.Command {
 func (cc *endorserClient) getChannels() ([]*pb.ChannelInfo, error) {
 	var err error
 
+	// 1 --
 	invocation := &pb.ChaincodeInvocationSpec{
 		ChaincodeSpec: &pb.ChaincodeSpec{
 			Type:        pb.ChaincodeSpec_Type(pb.ChaincodeSpec_Type_value["GOLANG"]),
@@ -52,18 +54,25 @@ func (cc *endorserClient) getChannels() ([]*pb.ChannelInfo, error) {
 	}
 
 	var prop *pb.Proposal
+
+	// 2 --
 	c, _ := cc.cf.Signer.Serialize()
+
+	// 3 --
 	prop, _, err = protoutil.CreateProposalFromCIS(common2.HeaderType_ENDORSER_TRANSACTION, "", invocation, c)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Cannot create proposal, due to %s", err))
 	}
 
 	var signedProp *pb.SignedProposal
+
+	// 4 --
 	signedProp, err = protoutil.GetSignedProposal(prop, cc.cf.Signer)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Cannot create signed proposal, due to %s", err))
 	}
 
+	// 5 --
 	proposalResp, err := cc.cf.EndorserClient.ProcessProposal(context.Background(), signedProp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Failed sending proposal, got %s", err))

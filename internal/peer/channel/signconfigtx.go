@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 
 	"fabricbypeer/protoutil"
+
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +32,8 @@ func signconfigtxCmd(cf *ChannelCmdFactory) *cobra.Command {
 }
 
 func sign(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
+
+	//   1 --  channel txFile
 	if channelTxFile == "" {
 		return InvalidCreateTx("No configtx file name supplied")
 	}
@@ -45,17 +48,22 @@ func sign(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
 		}
 	}
 
+	// 2 -- 读取 ReadFile
 	fileData, err := ioutil.ReadFile(channelTxFile)
 	if err != nil {
 		return ConfigTxFileNotFound(err.Error())
 	}
 
+	// 3 -- 反序列化
 	ctxEnv, err := protoutil.UnmarshalEnvelope(fileData)
 	if err != nil {
 		return err
 	}
 
+	// 4 -- 签字
 	sCtxEnv, err := sanityCheckAndSignConfigTx(ctxEnv, cf.Signer)
+
+	// 5 -- 
 	if err != nil {
 		return err
 	}

@@ -14,11 +14,12 @@ import (
 	"reflect"
 	"strings"
 
+	"fabricbypeer/bccsp"
+	"fabricbypeer/protoutil"
+
 	"github.com/golang/protobuf/proto"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"fabricbypeer/bccsp"
-	"fabricbypeer/protoutil"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +56,10 @@ func listCmd(cf *ChaincodeCmdFactory, cryptoProvider bccsp.BCCSP) *cobra.Command
 }
 
 func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory, cryptoProvider bccsp.BCCSP) error {
+	fmt.Println("------@@--100000000000888")
+	fmt.Println("------@@--100000000000344")
 	if getInstantiatedChaincodes && channelID == "" {
+		fmt.Println("------@@--100000000002304")
 		return errors.New("The required parameter 'channelID' is empty. Rerun the command with -C flag")
 	}
 	// Parsing of the command line is done so silence cmd usage
@@ -64,18 +68,20 @@ func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory, cryptoProvider b
 	var err error
 	if cf == nil {
 		cf, err = InitCmdFactory(cmd.Name(), true, false, cryptoProvider)
+		fmt.Println("------@@--10000000000035")
 		if err != nil {
+			fmt.Println("------@@--10000000000030001=>", err)
 			return err
 		}
 	}
-
+	fmt.Println("------@@--1000000000000")
 	creator, err := cf.Signer.Serialize()
 	if err != nil {
 		return fmt.Errorf("error serializing identity: %s", err)
 	}
 
 	var proposal *pb.Proposal
-
+	fmt.Println("------@@--1000000000002")
 	if getInstalledChaincodes == getInstantiatedChaincodes {
 		return errors.New("must explicitly specify \"--installed\" or \"--instantiated\"")
 	}
@@ -87,7 +93,7 @@ func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory, cryptoProvider b
 	if getInstantiatedChaincodes {
 		proposal, _, err = protoutil.CreateGetChaincodesProposal(channelID, creator)
 	}
-
+	fmt.Println("------@@--1000000000003")
 	if err != nil {
 		return errors.WithMessage(err, "error creating proposal")
 	}
@@ -97,7 +103,7 @@ func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory, cryptoProvider b
 	if err != nil {
 		return errors.WithMessage(err, "error creating signed proposal")
 	}
-
+	fmt.Println("------@@--1000000000004")
 	// list is currently only supported for one peer
 	proposalResponse, err := cf.EndorserClients[0].ProcessProposal(context.Background(), signedProposal)
 	if err != nil {
@@ -112,6 +118,7 @@ func getChaincodes(cmd *cobra.Command, cf *ChaincodeCmdFactory, cryptoProvider b
 		return errors.Errorf("bad response: %d - %s", proposalResponse.Response.Status, proposalResponse.Response.Message)
 	}
 
+	fmt.Println("------@@--1000000000005")
 	return printResponse(getInstalledChaincodes, getInstantiatedChaincodes, proposalResponse)
 }
 

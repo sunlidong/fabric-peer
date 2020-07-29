@@ -167,6 +167,7 @@ func (c *CommitReadinessChecker) ReadinessCheck() error {
 	}
 
 	// checkcommitreadiness currently only supports a single peer
+	// proposalResponse
 	proposalResponse, err := c.EndorserClient.ProcessProposal(context.Background(), signedProposal)
 	if err != nil {
 		return errors.WithMessage(err, "failed to endorse proposal")

@@ -13,12 +13,13 @@ import (
 	"os"
 	"strings"
 
+	"fabricbypeer/bccsp"
+	"fabricbypeer/protoutil"
+
 	"github.com/golang/protobuf/proto"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	lb "github.com/hyperledger/fabric-protos-go/peer/lifecycle"
-	"fabricbypeer/bccsp"
-	"fabricbypeer/protoutil"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -99,11 +100,13 @@ func (i *InstalledQuerier) Query() error {
 		i.Command.SilenceUsage = true
 	}
 
+	// 1 --
 	proposal, err := i.createProposal()
 	if err != nil {
 		return errors.WithMessage(err, "failed to create proposal")
 	}
 
+	// 
 	signedProposal, err := signProposal(proposal, i.Signer)
 	if err != nil {
 		return errors.WithMessage(err, "failed to create signed proposal")

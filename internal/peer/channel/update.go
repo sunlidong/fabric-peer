@@ -13,6 +13,7 @@ import (
 
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/protoutil"
+
 	"github.com/spf13/cobra"
 )
 
@@ -36,10 +37,13 @@ func updateCmd(cf *ChannelCmdFactory) *cobra.Command {
 
 func update(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
 	//the global chainID filled by the "-c" command
+
+	// 判断 channelID
 	if channelID == common.UndefinedParamValue {
 		return errors.New("Must supply channel ID")
 	}
 
+	// 通道配置文件
 	if channelTxFile == "" {
 		return InvalidCreateTx("No configtx file name supplied")
 	}
@@ -54,11 +58,13 @@ func update(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
 		}
 	}
 
+	//  读取通道配置文件
 	fileData, err := ioutil.ReadFile(channelTxFile)
 	if err != nil {
 		return ConfigTxFileNotFound(err.Error())
 	}
 
+	// 反序列化
 	ctxEnv, err := protoutil.UnmarshalEnvelope(fileData)
 	if err != nil {
 		return err

@@ -12,11 +12,12 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	pcommon "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/core/scc/cscc"
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/protoutil"
+
+	pcommon "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/spf13/cobra"
 )
 
@@ -76,6 +77,8 @@ func getJoinCCSpec() (*pb.ChaincodeSpec, error) {
 }
 
 func executeJoin(cf *ChannelCmdFactory) (err error) {
+
+	// 1 --
 	spec, err := getJoinCCSpec()
 	if err != nil {
 		return err
@@ -84,23 +87,29 @@ func executeJoin(cf *ChannelCmdFactory) (err error) {
 	// Build the ChaincodeInvocationSpec message
 	invocation := &pb.ChaincodeInvocationSpec{ChaincodeSpec: spec}
 
+	// 2 --
 	creator, err := cf.Signer.Serialize()
 	if err != nil {
 		return fmt.Errorf("Error serializing identity for %s: %s", cf.Signer.GetIdentifier(), err)
 	}
 
 	var prop *pb.Proposal
+
+	// 3 --
 	prop, _, err = protoutil.CreateProposalFromCIS(pcommon.HeaderType_CONFIG, "", invocation, creator)
 	if err != nil {
 		return fmt.Errorf("Error creating proposal for join %s", err)
 	}
 
 	var signedProp *pb.SignedProposal
+
+	// 4 --
 	signedProp, err = protoutil.GetSignedProposal(prop, cf.Signer)
 	if err != nil {
 		return fmt.Errorf("Error creating signed proposal %s", err)
 	}
 
+	// 5 --
 	var proposalResp *pb.ProposalResponse
 	proposalResp, err = cf.EndorserClient.ProcessProposal(context.Background(), signedProp)
 	if err != nil {
@@ -114,6 +123,8 @@ func executeJoin(cf *ChannelCmdFactory) (err error) {
 	if proposalResp.Response.Status != 0 && proposalResp.Response.Status != 200 {
 		return ProposalFailedErr(fmt.Sprintf("bad proposal response %d: %s", proposalResp.Response.Status, proposalResp.Response.Message))
 	}
+
+	// 6 --
 	logger.Info("Successfully submitted proposal to join channel")
 	return nil
 }

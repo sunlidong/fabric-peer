@@ -9,10 +9,11 @@ package chaincode
 import (
 	"crypto/tls"
 
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/internal/pkg/identity"
+
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )

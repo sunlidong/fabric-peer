@@ -11,12 +11,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	cb "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/core/scc/qscc"
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -40,6 +41,7 @@ func getinfoCmd(cf *ChannelCmdFactory) *cobra.Command {
 func (cc *endorserClient) getBlockChainInfo() (*cb.BlockchainInfo, error) {
 	var err error
 
+	// 1 --
 	invocation := &pb.ChaincodeInvocationSpec{
 		ChaincodeSpec: &pb.ChaincodeSpec{
 			Type:        pb.ChaincodeSpec_Type(pb.ChaincodeSpec_Type_value["GOLANG"]),
@@ -49,6 +51,8 @@ func (cc *endorserClient) getBlockChainInfo() (*cb.BlockchainInfo, error) {
 	}
 
 	var prop *pb.Proposal
+
+	// 2 --
 	c, _ := cc.cf.Signer.Serialize()
 	prop, _, err = protoutil.CreateProposalFromCIS(cb.HeaderType_ENDORSER_TRANSACTION, "", invocation, c)
 	if err != nil {
@@ -56,21 +60,27 @@ func (cc *endorserClient) getBlockChainInfo() (*cb.BlockchainInfo, error) {
 	}
 
 	var signedProp *pb.SignedProposal
+
+	// 3 --
 	signedProp, err = protoutil.GetSignedProposal(prop, cc.cf.Signer)
 	if err != nil {
 		return nil, errors.WithMessage(err, "cannot create signed proposal")
 	}
 
+	// 4 --
 	proposalResp, err := cc.cf.EndorserClient.ProcessProposal(context.Background(), signedProp)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed sending proposal")
 	}
 
+	// 5 --
 	if proposalResp.Response == nil || proposalResp.Response.Status != 200 {
 		return nil, errors.Errorf("received bad response, status %d: %s", proposalResp.Response.Status, proposalResp.Response.Message)
 	}
 
 	blockChainInfo := &cb.BlockchainInfo{}
+
+	// 6 --
 	err = proto.Unmarshal(proposalResp.Response.Payload, blockChainInfo)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot read qscc response")
@@ -82,6 +92,8 @@ func (cc *endorserClient) getBlockChainInfo() (*cb.BlockchainInfo, error) {
 
 func getinfo(cmd *cobra.Command, cf *ChannelCmdFactory) error {
 	//the global chainID filled by the "-c" command
+
+	// 1 --
 	if channelID == common.UndefinedParamValue {
 		return errors.New("Must supply channel ID")
 	}
@@ -89,6 +101,8 @@ func getinfo(cmd *cobra.Command, cf *ChannelCmdFactory) error {
 	cmd.SilenceUsage = true
 
 	var err error
+
+	// 2 --
 	if cf == nil {
 		cf, err = InitCmdFactory(EndorserRequired, PeerDeliverNotRequired, OrdererNotRequired)
 		if err != nil {
@@ -98,10 +112,13 @@ func getinfo(cmd *cobra.Command, cf *ChannelCmdFactory) error {
 
 	client := &endorserClient{cf}
 
+	// 3 --
 	blockChainInfo, err := client.getBlockChainInfo()
 	if err != nil {
 		return err
 	}
+
+	// 4 --
 	jsonBytes, err := json.Marshal(blockChainInfo)
 	if err != nil {
 		return err

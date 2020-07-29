@@ -12,10 +12,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
-	cb "github.com/hyperledger/fabric-protos-go/common"
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric-protos-go/common"
 	"github.com/spf13/cobra"
 )
 
@@ -38,12 +39,16 @@ func fetchCmd(cf *ChannelCmdFactory) *cobra.Command {
 }
 
 func fetch(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
+
+	// -- 1
 	if len(args) == 0 {
 		return fmt.Errorf("fetch target required, oldest, newest, config, or a number")
 	}
 	if len(args) > 2 {
 		return fmt.Errorf("trailing args detected")
 	}
+
+	// -- 2
 	// Parsing of the command line is done so silence cmd usage
 	cmd.SilenceUsage = true
 
@@ -55,6 +60,8 @@ func fetch(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
 		ordererRequired = OrdererNotRequired
 		peerDeliverRequired = PeerDeliverRequired
 	}
+
+	// -- 3
 	var err error
 	if cf == nil {
 		cf, err = InitCmdFactory(EndorserNotRequired, peerDeliverRequired, ordererRequired)
@@ -65,6 +72,7 @@ func fetch(cmd *cobra.Command, args []string, cf *ChannelCmdFactory) error {
 
 	var block *cb.Block
 
+	// -- 4
 	switch args[0] {
 	case "oldest":
 		block, err = cf.DeliverClient.GetOldestBlock()

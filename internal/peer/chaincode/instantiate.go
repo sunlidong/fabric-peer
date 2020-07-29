@@ -26,7 +26,9 @@ const instantiateCmdName = "instantiate"
 const instantiateDesc = "Deploy the specified chaincode to the network."
 
 // instantiateCmd returns the cobra command for Chaincode Deploy
+// //实例化Cmd返回链码部署的眼镜蛇命令
 func instantiateCmd(cf *ChaincodeCmdFactory, cryptoProvider bccsp.BCCSP) *cobra.Command {
+
 	chaincodeInstantiateCmd = &cobra.Command{
 		Use:       instantiateCmdName,
 		Short:     fmt.Sprint(instantiateDesc),

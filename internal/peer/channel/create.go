@@ -11,8 +11,6 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	cb "github.com/hyperledger/fabric-protos-go/common"
 	"fabricbypeer/common/configtx"
 	"fabricbypeer/common/util"
 	"fabricbypeer/internal/configtxgen/encoder"
@@ -20,6 +18,9 @@ import (
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/internal/pkg/identity"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric-protos-go/common"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -168,25 +169,33 @@ func sendCreateChainTransaction(cf *ChannelCmdFactory) error {
 }
 
 func executeCreate(cf *ChannelCmdFactory) error {
+
+	// --1
 	err := sendCreateChainTransaction(cf)
 	if err != nil {
 		return err
 	}
 
+	// --2
 	block, err := getGenesisBlock(cf)
 	if err != nil {
 		return err
 	}
 
+	// --3
 	b, err := proto.Marshal(block)
 	if err != nil {
 		return err
 	}
 
 	file := channelID + ".block"
+
+	// --4
 	if outputBlock != common.UndefinedParamValue {
 		file = outputBlock
 	}
+
+	// --5 
 	err = ioutil.WriteFile(file, b, 0644)
 	if err != nil {
 		return err

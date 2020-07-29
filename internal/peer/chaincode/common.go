@@ -16,17 +16,18 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	pcommon "github.com/hyperledger/fabric-protos-go/common"
-	ab "github.com/hyperledger/fabric-protos-go/orderer"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/common/cauthdsl"
 	"fabricbypeer/common/util"
 	"fabricbypeer/internal/peer/common"
 	"fabricbypeer/internal/pkg/identity"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	pcommon "github.com/hyperledger/fabric-protos-go/common"
+	ab "github.com/hyperledger/fabric-protos-go/orderer"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -201,6 +202,9 @@ type collectionConfigJson struct {
 // GetCollectionConfigFromFile retrieves the collection configuration
 // from the supplied file; the supplied file must contain a
 // json-formatted array of collectionConfigJson elements
+// GetCollectionConfigFromFile检索集合配置
+//从提供的文件;提供的文件必须包含
+// json格式的collectionConfigJson元素数组
 func GetCollectionConfigFromFile(ccFile string) (*pb.CollectionConfigPackage, []byte, error) {
 	fileBytes, err := ioutil.ReadFile(ccFile)
 	if err != nil {
@@ -213,6 +217,9 @@ func GetCollectionConfigFromFile(ccFile string) (*pb.CollectionConfigPackage, []
 // getCollectionConfig retrieves the collection configuration
 // from the supplied byte array; the byte array must contain a
 // json-formatted array of collectionConfigJson elements
+// getCollectionConfig检索集合配置
+//从提供的字节数组;字节数组必须包含
+// json格式的collectionConfigJson元素数组
 func getCollectionConfigFromBytes(cconfBytes []byte) (*pb.CollectionConfigPackage, []byte, error) {
 	cconf := &[]collectionConfigJson{}
 	err := json.Unmarshal(cconfBytes, cconf)
@@ -706,6 +713,11 @@ func NewDeliverGroup(
 // the peer's deliver service, receive an error, or for the context
 // to timeout. An error will be returned whenever even a single
 // deliver client fails to connect to its peer
+
+// Connect等待组中的所有交付客户端连接
+//对等点的交付服务、接收错误或上下文
+// / /超时。一个错误将返回，即使是单个
+//交付客户端无法连接到它的对等端
 func (dg *DeliverGroup) Connect(ctx context.Context) error {
 	dg.wg.Add(len(dg.Clients))
 	for _, client := range dg.Clients {
@@ -731,6 +743,15 @@ func (dg *DeliverGroup) Connect(ctx context.Context) error {
 // ClientConnect sends a deliver seek info envelope using the
 // provided deliver client, setting the deliverGroup's Error
 // field upon any error
+// ClientConnect sends a deliver seek info envelope using the
+// provided deliver client, setting the deliverGroup's Error
+// field upon any error
+// // ClientConnect使用
+//提供送货客户端，设置送货组错误
+//字段上的任何错误
+// ClientConnect使用
+//提供送货客户端，设置送货组错误
+//字段上的任何错误
 func (dg *DeliverGroup) ClientConnect(ctx context.Context, dc *DeliverClient) {
 	defer dg.wg.Done()
 	df, err := dc.Client.DeliverFiltered(ctx)
@@ -754,6 +775,9 @@ func (dg *DeliverGroup) ClientConnect(ctx context.Context, dc *DeliverClient) {
 // Wait waits for all deliver client connections in the group to
 // either receive a block with the txid, an error, or for the
 // context to timeout
+// 等待组中的所有交付客户端连接
+//要么接收一个带有txid的块，一个错误，或为
+//上下文超时
 func (dg *DeliverGroup) Wait(ctx context.Context) error {
 	if len(dg.Clients) == 0 {
 		return nil
