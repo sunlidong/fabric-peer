@@ -37,7 +37,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/tedsuo/ifrit v0.0.0-20191009134036-9a97d0632f00
 	github.com/willf/bitset v1.1.10
-	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
+	go.etcd.io/etcd v0.5.0-alpha.5.0.20181228115726-23731bf9ba55 
 	go.uber.org/zap v1.15.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114

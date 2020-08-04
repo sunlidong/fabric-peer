@@ -20,10 +20,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-lib-go/healthz"
-	cb "github.com/hyperledger/fabric-protos-go/common"
-	ab "github.com/hyperledger/fabric-protos-go/orderer"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/bccsp/factory"
 	"fabricbypeer/common/channelconfig"
@@ -50,6 +46,11 @@ import (
 	"fabricbypeer/orderer/consensus/kafka"
 	"fabricbypeer/orderer/consensus/solo"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-lib-go/healthz"
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	ab "github.com/hyperledger/fabric-protos-go/orderer"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -77,38 +78,56 @@ func Main() {
 		return
 	}
 
+	// 1 --
+
 	conf, err := localconfig.Load()
 	if err != nil {
 		logger.Error("failed to parse config: ", err)
 		os.Exit(1)
 	}
+
+	// 2 --
 	initializeLogging()
 
+	// 3 --
 	prettyPrintStruct(conf)
 
+	// 4 --
 	cryptoProvider := factory.GetDefault()
 
+	// 5 --
 	signer, signErr := loadLocalMSP(conf).GetDefaultSigningIdentity()
 	if signErr != nil {
 		logger.Panicf("Failed to get local MSP identity: %s", signErr)
 	}
-
+	// 6 --
 	opsSystem := newOperationsSystem(conf.Operations, conf.Metrics)
 	if err = opsSystem.Start(); err != nil {
 		logger.Panicf("failed to initialize operations subsystem: %s", err)
 	}
+
+	// 7 --
 	defer opsSystem.Stop()
 	metricsProvider := opsSystem.Provider
+
+	// 8 --
 	logObserver := floggingmetrics.NewObserver(metricsProvider)
 	flogging.SetObserver(logObserver)
 
+	// 9 --
 	serverConfig := initializeServerConfig(conf, metricsProvider)
+
+	// 10 --
 	grpcServer := initializeGrpcServer(conf, serverConfig)
+
+	// 11 --
 	caMgr := &caManager{
 		appRootCAsByChain:     make(map[string][][]byte),
 		ordererRootCAsByChain: make(map[string][][]byte),
 		clientRootCAs:         serverConfig.SecOpts.ClientRootCAs,
 	}
+
+	// 12 --
 
 	lf, _, err := createLedgerFactory(conf, metricsProvider)
 	if err != nil {
@@ -124,6 +143,8 @@ func Main() {
 	var clusterDialer *cluster.PredicateDialer
 	var clusterType, reuseGrpcListener bool
 	var serversToUpdate []*comm.GRPCServer
+
+	// 13 --
 	if conf.General.BootstrapMethod == "file" {
 		bootstrapBlock := extractBootstrapBlock(conf)
 		if err := ValidateBootstrapBlock(bootstrapBlock, cryptoProvider); err != nil {
@@ -163,6 +184,7 @@ func Main() {
 		}
 
 	}
+	// 13 --
 
 	identityBytes, err := signer.Serialize()
 	if err != nil {
@@ -170,6 +192,8 @@ func Main() {
 	}
 
 	expirationLogger := flogging.MustGetLogger("certmonitor")
+
+	// 14 --
 	crypto.TrackExpiration(
 		serverConfig.SecOpts.UseTLS,
 		serverConfig.SecOpts.Certificate,
@@ -185,6 +209,7 @@ func Main() {
 		serversToUpdate = append(serversToUpdate, grpcServer)
 	}
 
+	// 15 --
 	tlsCallback := func(bundle *channelconfig.Bundle) {
 		logger.Debug("Executing callback to update root CAs")
 		caMgr.updateTrustedRoots(bundle, serversToUpdate...)
@@ -196,6 +221,7 @@ func Main() {
 		}
 	}
 
+	// 16 --
 	manager := initializeMultichannelRegistrar(
 		clusterBootBlock,
 		r,
@@ -211,6 +237,7 @@ func Main() {
 		tlsCallback,
 	)
 
+	// 17 --
 	mutualTLS := serverConfig.SecOpts.UseTLS && serverConfig.SecOpts.RequireClientCert
 	server := NewServer(
 		manager,
@@ -222,6 +249,8 @@ func Main() {
 	)
 
 	logger.Infof("Starting %s", metadata.GetVersionInfo())
+
+	// 18 --
 	go handleSignals(addPlatformSignals(map[os.Signal]func(){
 		syscall.SIGTERM: func() {
 			grpcServer.Stop()
@@ -239,9 +268,16 @@ func Main() {
 	if conf.General.Profile.Enabled {
 		go initializeProfilingService(conf)
 	}
+
+	// 19 --
 	ab.RegisterAtomicBroadcastServer(grpcServer.Server(), server)
 	logger.Info("Beginning to serve requests")
+
+	// 20 --
 	grpcServer.Start()
+
+	// 21 --
+	logger.Info("start serve")
 }
 
 func reuseListener(conf *localconfig.TopLevel, typ string) bool {

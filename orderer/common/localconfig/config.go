@@ -9,11 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Shopify/sarama"
 	bccsp "fabricbypeer/bccsp/factory"
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/common/viperutil"
 	coreconfig "fabricbypeer/core/config"
+
+	"github.com/Shopify/sarama"
 	"github.com/spf13/viper"
 )
 
@@ -283,7 +284,10 @@ var Defaults = TopLevel{
 // Load parses the orderer YAML file and environment, producing
 // a struct suitable for config use, returning error on failure.
 func Load() (*TopLevel, error) {
+
 	config := viper.New()
+
+
 	coreconfig.InitViper(config, "orderer")
 	config.SetEnvPrefix(Prefix)
 	config.AutomaticEnv()

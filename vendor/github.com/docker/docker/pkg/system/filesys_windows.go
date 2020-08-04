@@ -1,7 +1,6 @@
 package system // import "github.com/docker/docker/pkg/system"
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -110,8 +109,7 @@ func mkdirWithACL(name string, sddl string) error {
 	}
 	sa.Length = uint32(unsafe.Sizeof(sa))
 	sa.InheritHandle = 1
-	fmt.Println("sd=>", sd)
-	// sa.SecurityDescriptor = uintptr(unsafe.Pointer(&sd[0]))
+	sa.SecurityDescriptor = uintptr(unsafe.Pointer(&sd[0]))
 
 	namep, err := windows.UTF16PtrFromString(name)
 	if err != nil {
