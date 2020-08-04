@@ -70,6 +70,8 @@ var (
 
 // Main is the entry point of orderer process
 func Main() {
+
+	// 解析用户命令行
 	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	// "version" command
@@ -80,16 +82,17 @@ func Main() {
 
 	// 1 --
 
+	// 加载 orderer.yaml 配置文件
 	conf, err := localconfig.Load()
 	if err != nil {
 		logger.Error("failed to parse config: ", err)
 		os.Exit(1)
 	}
 
-	// 2 --
+	// 2 -- 初始化日志级别
 	initializeLogging()
 
-	// 3 --
+	// 3 -- 打印信息
 	prettyPrintStruct(conf)
 
 	// 4 --
@@ -723,6 +726,7 @@ type healthChecker interface {
 	RegisterChecker(component string, checker healthz.HealthChecker) error
 }
 
+// 初始化 多通道注册管理器 Registrar 对象
 func initializeMultichannelRegistrar(
 	bootstrapBlock *cb.Block,
 	ri *replicationInitiator,

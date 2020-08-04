@@ -10,11 +10,12 @@ import (
 	"io"
 	"time"
 
-	cb "github.com/hyperledger/fabric-protos-go/common"
-	ab "github.com/hyperledger/fabric-protos-go/orderer"
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/common/util"
 	"fabricbypeer/orderer/common/msgprocessor"
+
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	ab "github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/pkg/errors"
 )
 
@@ -63,11 +64,14 @@ type Handler struct {
 }
 
 // Handle reads requests from a Broadcast stream, processes them, and returns the responses to the stream
+
+// broadcast 交易广播服务处理句柄的handle() 方法源码
 func (bh *Handler) Handle(srv ab.AtomicBroadcast_BroadcastServer) error {
 	addr := util.ExtractRemoteAddress(srv.Context())
 	logger.Debugf("Starting new broadcast loop for %s", addr)
+	// 消息处理循环
 	for {
-		msg, err := srv.Recv()
+		msg, err := srv.Recv() //等待接收交易请求消息
 		if err == io.EOF {
 			logger.Debugf("Received EOF from %s, hangup", addr)
 			return nil
@@ -77,8 +81,12 @@ func (bh *Handler) Handle(srv ab.AtomicBroadcast_BroadcastServer) error {
 			return err
 		}
 
+		// 处理
 		resp := bh.ProcessMessage(msg, addr)
+
+		// send
 		err = srv.Send(resp)
+
 		if resp.Status != cb.Status_SUCCESS {
 			return err
 		}

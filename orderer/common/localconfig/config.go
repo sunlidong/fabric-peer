@@ -29,10 +29,10 @@ var logger = flogging.MustGetLogger("localconfig")
 // modify the default mapping, see the "Unmarshal"
 // section of https://github.com/spf13/viper for more info.
 type TopLevel struct {
-	General    General
-	FileLedger FileLedger
-	Kafka      Kafka
-	Debug      Debug
+	General    General    // 通用配置对象
+	FileLedger FileLedger // 文件账本配置对象
+	Kafka      Kafka      //Kafka共识组件配置对象
+	Debug      Debug      // 调试信息配置对象
 	Consensus  interface{}
 	Operations Operations
 	Metrics    Metrics
@@ -285,24 +285,33 @@ var Defaults = TopLevel{
 // a struct suitable for config use, returning error on failure.
 func Load() (*TopLevel, error) {
 
+	// 创建 viper 对象
 	config := viper.New()
 
-
+	// 初始化 Viper组件
 	coreconfig.InitViper(config, "orderer")
+	// 设置环境变量前缀
 	config.SetEnvPrefix(Prefix)
+	// 查找匹配环境变量
 	config.AutomaticEnv()
+	// 创建替换符
 	replacer := strings.NewReplacer(".", "_")
+	// 设置环境替换符
 	config.SetEnvKeyReplacer(replacer)
 
+	// 	加载配置文件
 	if err := config.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("Error reading configuration: %s", err)
 	}
 
 	var uconf TopLevel
+
+	// 将 Viper组件配置项信息重新解析成 Orderer配置对象 conf
 	if err := viperutil.EnhancedExactUnmarshal(config, &uconf); err != nil {
 		return nil, fmt.Errorf("Error unmarshaling config into struct: %s", err)
 	}
 
+	// 检查 orderer 配置对象 conf中的配置项，如果发现配置中没有 设置参数值，使用全局变量对象设置 conf的默认属性值
 	uconf.completeInitialization(filepath.Dir(config.ConfigFileUsed()))
 	return &uconf, nil
 }
