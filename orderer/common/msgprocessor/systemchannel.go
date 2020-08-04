@@ -9,8 +9,6 @@ package msgprocessor
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	cb "github.com/hyperledger/fabric-protos-go/common"
 	"fabricbypeer/bccsp"
 	"fabricbypeer/common/channelconfig"
 	"fabricbypeer/common/configtx"
@@ -18,6 +16,9 @@ import (
 	"fabricbypeer/internal/pkg/identity"
 	"fabricbypeer/orderer/common/localconfig"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric-protos-go/common"
 	"github.com/pkg/errors"
 )
 
@@ -93,6 +94,8 @@ func (s *SystemChannel) ProcessNormalMsg(msg *cb.Envelope) (configSeq uint64, er
 // ProcessConfigUpdateMsg handles messages of type CONFIG_UPDATE either for the system channel itself
 // or, for channel creation.  In the channel creation case, the CONFIG_UPDATE is wrapped into a resulting
 // ORDERER_TRANSACTION, and in the standard CONFIG_UPDATE case, a resulting CONFIG message
+
+// 从消息体重获取通道ID
 func (s *SystemChannel) ProcessConfigUpdateMsg(envConfigUpdate *cb.Envelope) (config *cb.Envelope, configSeq uint64, err error) {
 	channelID, err := protoutil.ChannelID(envConfigUpdate)
 	if err != nil {
@@ -101,6 +104,7 @@ func (s *SystemChannel) ProcessConfigUpdateMsg(envConfigUpdate *cb.Envelope) (co
 
 	logger.Debugf("Processing config update tx with system channel message processor for channel ID %s", channelID)
 
+	// 判断 获取的通道ID 是否是已经存在的用户通道ID，如果是的话，转到 standraChennel中
 	if channelID == s.support.ChannelID() {
 		return s.StandardChannel.ProcessConfigUpdateMsg(envConfigUpdate)
 	}
@@ -111,21 +115,23 @@ func (s *SystemChannel) ProcessConfigUpdateMsg(envConfigUpdate *cb.Envelope) (co
 
 	// If the channel ID does not match the system channel, then this must be a channel creation transaction
 
+	// 	 由于之前的peer 节点 发送为创建通道的TX，所以对通道iD是不存在的
 	bundle, err := s.templator.NewChannelConfig(envConfigUpdate)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	// 创建一个配置验证器对该方法的传入参数进行校验操作
 	newChannelConfigEnv, err := bundle.ConfigtxValidator().ProposeConfigUpdate(envConfigUpdate)
 	if err != nil {
 		return nil, 0, errors.WithMessagef(err, "error validating channel creation transaction for new channel '%s', could not successfully apply update to template configuration", channelID)
 	}
-
+	// 创建一个签名的Envelope,此次为Header类型为HeaderType_CONFIG进行签名
 	newChannelEnvConfig, err := protoutil.CreateSignedEnvelope(cb.HeaderType_CONFIG, channelID, s.support.Signer(), newChannelConfigEnv, msgVersion, epoch)
 	if err != nil {
 		return nil, 0, err
 	}
-
+	// 创建一个签名的Transaction,此次为Header类型为HeaderType_ORDERER_TRANSACTION进行签名
 	wrappedOrdererTransaction, err := protoutil.CreateSignedEnvelope(cb.HeaderType_ORDERER_TRANSACTION, s.support.ChannelID(), s.support.Signer(), newChannelEnvConfig, msgVersion, epoch)
 	if err != nil {
 		return nil, 0, err
@@ -136,11 +142,13 @@ func (s *SystemChannel) ProcessConfigUpdateMsg(envConfigUpdate *cb.Envelope) (co
 	// check, which although not strictly necessary, is a good sanity check, in case the orderer
 	// has not been configured with the right cert material.  The additional overhead of the signature
 	// check is negligible, as this is the channel creation path and not the normal path.
+	// 过滤器进行过滤，主要检查是否创建的Transaction过大，以及签名检查，确保Order节点使用正确的证书进行签名
 	err = s.StandardChannel.filters.Apply(wrappedOrdererTransaction)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	// 将 Transaction 返回
 	return wrappedOrdererTransaction, s.support.Sequence(), nil
 }
 
@@ -226,6 +234,8 @@ func NewDefaultTemplator(support DefaultTemplatorSupport, bccsp bccsp.BCCSP) *De
 }
 
 // NewChannelConfig creates a new template channel configuration based on the current config in the ordering system channel.
+
+// @@@123
 func (dt *DefaultTemplator) NewChannelConfig(envConfigUpdate *cb.Envelope) (channelconfig.Resources, error) {
 	configUpdatePayload, err := protoutil.UnmarshalPayload(envConfigUpdate.Payload)
 	if err != nil {

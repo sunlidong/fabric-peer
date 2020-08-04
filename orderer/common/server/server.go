@@ -13,9 +13,6 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	cb "github.com/hyperledger/fabric-protos-go/common"
-	ab "github.com/hyperledger/fabric-protos-go/orderer"
 	"fabricbypeer/common/deliver"
 	"fabricbypeer/common/metrics"
 	"fabricbypeer/common/policies"
@@ -24,6 +21,10 @@ import (
 	"fabricbypeer/orderer/common/msgprocessor"
 	"fabricbypeer/orderer/common/multichannel"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	ab "github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/pkg/errors"
 )
 
@@ -156,6 +157,8 @@ func (dmt *deliverMsgTracer) Recv() (*cb.Envelope, error) {
 }
 
 // Broadcast receives a stream of messages from a client for ordering
+
+//  orderer 节点接收信息
 func (s *server) Broadcast(srv ab.AtomicBroadcast_BroadcastServer) error {
 	logger.Debugf("Starting new Broadcast handler")
 	defer func() {

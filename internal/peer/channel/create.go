@@ -138,24 +138,38 @@ func sanityCheckAndSignConfigTx(envConfigUpdate *cb.Envelope, signer identity.Si
 	return protoutil.CreateSignedEnvelope(cb.HeaderType_CONFIG_UPDATE, channelID, signer, configUpdateEnv, 0, 0)
 }
 
+//	发送创建通道的Transaction到Order节点
 func sendCreateChainTransaction(cf *ChannelCmdFactory) error {
 	var err error
+	// 定义了一个 Envelope 结构体
 	var chCrtEnv *cb.Envelope
+	// type Envelope struct {
+	// 	#主要就是保存被序列化的有效载荷
+	// 	Payload []byte `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
+	// 	#由创建者进行的签名信息
+	// 	Signature            []byte   `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
+	// 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	// 	XXX_unrecognized     []byte   `json:"-"`
+	// 	XXX_sizecache        int32    `json:"-"`
+	// }
 
+	// 创建 Envelope
 	if channelTxFile != "" {
 		if chCrtEnv, err = createChannelFromConfigTx(channelTxFile); err != nil {
 			return err
 		}
 	} else {
+		// 创建 Envelope
 		if chCrtEnv, err = createChannelFromDefaults(cf); err != nil {
 			return err
 		}
 	}
-
+	//校验 刚创建完成的Envelope
 	if chCrtEnv, err = sanityCheckAndSignConfigTx(chCrtEnv, cf.Signer); err != nil {
 		return err
 	}
 
+	// 创建一个用户广播信息的客户端
 	var broadcastClient common.BroadcastClient
 	broadcastClient, err = cf.BroadcastFactory()
 	if err != nil {
@@ -163,6 +177,8 @@ func sendCreateChainTransaction(cf *ChannelCmdFactory) error {
 	}
 
 	defer broadcastClient.Close()
+
+	//将 创建 通道的Envelope信息广播出去
 	err = broadcastClient.Send(chCrtEnv)
 
 	return err
@@ -195,7 +211,7 @@ func executeCreate(cf *ChannelCmdFactory) error {
 		file = outputBlock
 	}
 
-	// --5 
+	// --5
 	err = ioutil.WriteFile(file, b, 0644)
 	if err != nil {
 		return err

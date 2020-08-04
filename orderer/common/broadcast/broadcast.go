@@ -67,6 +67,8 @@ type Handler struct {
 
 // broadcast 交易广播服务处理句柄的handle() 方法源码
 func (bh *Handler) Handle(srv ab.AtomicBroadcast_BroadcastServer) error {
+
+	// 首先获取消息的源地址
 	addr := util.ExtractRemoteAddress(srv.Context())
 	logger.Debugf("Starting new broadcast loop for %s", addr)
 	// 消息处理循环
@@ -81,7 +83,7 @@ func (bh *Handler) Handle(srv ab.AtomicBroadcast_BroadcastServer) error {
 			return err
 		}
 
-		// 处理
+		// 处理 ，我们看一下这个方法
 		resp := bh.ProcessMessage(msg, addr)
 
 		// send
@@ -142,6 +144,8 @@ func (mt *MetricsTracker) BeginEnqueue() {
 
 // ProcessMessage validates and enqueues a single message
 func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.BroadcastResponse) {
+
+	// 记录器， 记录消息的相关信息
 	tracker := &MetricsTracker{
 		ChannelID: "unknown",
 		TxType:    "unknown",
@@ -153,8 +157,11 @@ func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.Broad
 		// and not the return value
 		tracker.Record(resp)
 	}()
+
+	// 记录处理消息的开始时间
 	tracker.BeginValidate()
 
+	//  该方法获取接收到的消息的Header,并判断是否为配置信息
 	chdr, isConfig, processor, err := bh.SupportRegistrar.BroadcastChannelSupport(msg)
 	if chdr != nil {
 		tracker.ChannelID = chdr.ChannelId
@@ -187,8 +194,9 @@ func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.Broad
 			return &ab.BroadcastResponse{Status: cb.Status_SERVICE_UNAVAILABLE, Info: err.Error()}
 		}
 	} else { // isConfig
-		logger.Debugf("[channel: %s] Broadcast is processing config update message from %s", chdr.ChannelId, addr)
 
+		logger.Debugf("[channel: %s] Broadcast is processing config update message from %s", chdr.ChannelId, addr)
+		// 对配置更新消息进行处理，主要方法
 		config, configSeq, err := processor.ProcessConfigUpdateMsg(msg)
 		if err != nil {
 			logger.Warningf("[channel: %s] Rejecting broadcast of config message from %s because of error: %s", chdr.ChannelId, addr, err)
