@@ -12,10 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric-protos-go/transientstore"
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/common/util"
 	"fabricbypeer/core/chaincode/lifecycle"
@@ -24,6 +20,11 @@ import (
 	"fabricbypeer/internal/pkg/identity"
 	"fabricbypeer/msp"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-protos-go/transientstore"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -273,12 +274,20 @@ func (e *Endorser) preProcess(up *UnpackedProposal, channel *Channel) error {
 }
 
 // ProcessProposal process the Proposal
+
+// 背书提案过程
 func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedProposal) (*pb.ProposalResponse, error) {
 	// start time for computing elapsed time metric for successfully endorsed proposals
+
+	// 首先获取peer 节点处理提案开始时间
 	startTime := time.Now()
+	// peer 节点接收到的提案数+1
 	e.Metrics.ProposalsReceived.Add(1)
 
+	//从上下文中获取发起提案的地址
 	addr := util.ExtractRemoteAddress(ctx)
+
+	// 日志输出
 	endorserLogger.Debug("request from", addr)
 
 	// variables to capture proposal duration metric
@@ -302,7 +311,7 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 		}
 	}
 
-	// 0 -- check and validate
+	// 0 -- check and validate  对已经签名的提案进行预处理
 	err = e.preProcess(up, channel)
 	if err != nil {
 		return &pb.ProposalResponse{Response: &pb.Response{Status: 500, Message: err.Error()}}, err
