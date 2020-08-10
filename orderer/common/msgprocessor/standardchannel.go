@@ -42,7 +42,7 @@ type StandardChannelSupport interface {
 
 	OrdererConfig() (channelconfig.Orderer, bool)
 }
-
+	
 // StandardChannel implements the Processor interface for standard extant channels
 type StandardChannel struct {
 	support           StandardChannelSupport
