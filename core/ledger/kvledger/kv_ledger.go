@@ -11,9 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/common/flogging"
 	commonledger "fabricbypeer/common/ledger"
 	"fabricbypeer/common/util"
@@ -29,6 +26,10 @@ import (
 	"fabricbypeer/core/ledger/pvtdatapolicy"
 	lutil "fabricbypeer/core/ledger/util"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 )
 
@@ -37,14 +38,14 @@ var logger = flogging.MustGetLogger("kvledger")
 // kvLedger provides an implementation of `ledger.PeerLedger`.
 // This implementation provides a key-value based data model
 type kvLedger struct {
-	ledgerID               string
-	blockStore             *ledgerstorage.Store
-	txtmgmt                txmgr.TxMgr
-	historyDB              *history.DB
+	ledgerID               string               // 账本ID
+	blockStore             *ledgerstorage.Store // 区块储存对象
+	txtmgmt                txmgr.TxMgr          // 交易管理器
+	historyDB              *history.DB          //历史数据库
 	configHistoryRetriever ledger.ConfigHistoryRetriever
-	blockAPIsRWLock        *sync.RWMutex
-	stats                  *ledgerStats
-	commitHash             []byte
+	blockAPIsRWLock        *sync.RWMutex // 读取同步锁
+	stats                  *ledgerStats  // 状态
+	commitHash             []byte        // 提交hash
 }
 
 // newKVLedger constructs new `KVLedger`

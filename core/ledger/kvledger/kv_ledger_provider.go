@@ -53,13 +53,15 @@ var (
 )
 
 // Provider implements interface ledger.PeerLedgerProvider
+
+//  Peer 节点 账本提供者
 type Provider struct {
-	idStore             *idStore
-	ledgerStoreProvider *ledgerstorage.Provider
+	idStore             *idStore                // id Store 数据库
+	ledgerStoreProvider *ledgerstorage.Provider //账本对象提供者
 	vdbProvider         privacyenabledstate.DBProvider
-	historydbProvider   *history.DBProvider
+	historydbProvider   *history.DBProvider // 历史数据库提供者
 	configHistoryMgr    confighistory.Mgr
-	stateListeners      []ledger.StateListener
+	stateListeners      []ledger.StateListener //状态监听器
 	bookkeepingProvider bookkeeping.Provider
 	initializer         *ledger.Initializer
 	collElgNotifier     *collElgNotifier
@@ -233,11 +235,17 @@ func (p *Provider) initLedgerStatistics() {
 // upon a successful ledger creation with the committed genesis block, removes the flag and add entry into
 // created ledgers list (atomically). If a crash happens in between, the 'recoverUnderConstructionLedger'
 // function is invoked before declaring the provider to be usable
+
+// 创建 Peer 节点账本对象
 func (p *Provider) Create(genesisBlock *common.Block) (ledger.PeerLedger, error) {
+
+	// 从创世快中获取链ID 作为账本ID
 	ledgerID, err := protoutil.GetChainIDFromBlock(genesisBlock)
 	if err != nil {
 		return nil, err
 	}
+
+	// 检查idStore 数据库中是否已经存在该账本ID
 	exists, err := p.idStore.ledgerIDExists(ledgerID)
 	if err != nil {
 		return nil, err
@@ -245,6 +253,8 @@ func (p *Provider) Create(genesisBlock *common.Block) (ledger.PeerLedger, error)
 	if exists {
 		return nil, ErrLedgerIDExists
 	}
+
+	// 设置该账本处于构造中的标志位
 	if err = p.idStore.setUnderConstructionFlag(ledgerID); err != nil {
 		return nil, err
 	}
@@ -259,6 +269,9 @@ func (p *Provider) Create(genesisBlock *common.Block) (ledger.PeerLedger, error)
 		lgr.Close()
 		return nil, err
 	}
+
+	// 创建账本ID 的键值对，键位是账本ID ,值是序列化后的创世快字节数组
+
 	panicOnErr(p.idStore.createLedgerID(ledgerID, genesisBlock), "Error while marking ledger as created")
 	return lgr, nil
 }
@@ -280,6 +293,7 @@ func (p *Provider) Open(ledgerID string) (ledger.PeerLedger, error) {
 	return p.openInternal(ledgerID)
 }
 
+// 	打开或者创建指定账本的Peer节点对象
 func (p *Provider) openInternal(ledgerID string) (ledger.PeerLedger, error) {
 	// Get the block store for a chain/ledger
 	blockStore, err := p.ledgerStoreProvider.Open(ledgerID)

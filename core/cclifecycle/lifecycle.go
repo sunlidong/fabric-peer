@@ -11,6 +11,7 @@ import (
 
 	"fabricbypeer/common/chaincode"
 	"fabricbypeer/common/flogging"
+
 	"github.com/pkg/errors"
 )
 

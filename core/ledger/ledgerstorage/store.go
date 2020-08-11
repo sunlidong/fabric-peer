@@ -10,7 +10,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/hyperledger/fabric-protos-go/common"
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/common/ledger/blkstorage"
 	"fabricbypeer/common/ledger/blkstorage/fsblkstorage"
@@ -18,6 +17,8 @@ import (
 	"fabricbypeer/core/ledger"
 	"fabricbypeer/core/ledger/pvtdatapolicy"
 	"fabricbypeer/core/ledger/pvtdatastorage"
+
+	"github.com/hyperledger/fabric-protos-go/common"
 )
 
 const maxBlockFileSize = 64 * 1024 * 1024
@@ -68,14 +69,19 @@ func NewProvider(blockStoreDir string, conf *pvtdatastorage.PrivateDataConfig, m
 }
 
 // Open opens the store
+
+// 打开或者创建账本数据储存对象 （包括区块储存对象，隐私数据储存对象）
 func (p *Provider) Open(ledgerid string) (*Store, error) {
 	var blockStore blkstorage.BlockStore
 	var pvtdataStore pvtdatastorage.Store
 	var err error
 
+	// 创建指定账本的区块储存对象
 	if blockStore, err = p.blkStoreProvider.OpenBlockStore(ledgerid); err != nil {
 		return nil, err
 	}
+
+	// 创建指定账本的隐私数据储存对象
 	if pvtdataStore, err = p.pvtdataStoreProvider.OpenStore(ledgerid); err != nil {
 		return nil, err
 	}
