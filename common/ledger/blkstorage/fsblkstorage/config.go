@@ -34,6 +34,8 @@ type Conf struct {
 
 // NewConf constructs new `Conf`.
 // blockStorageDir is the top level folder under which `FsBlockStore` manages its data
+
+// 创建  配置
 func NewConf(blockStorageDir string, maxBlockfileSize int) *Conf {
 	if maxBlockfileSize <= 0 {
 		maxBlockfileSize = defaultMaxBlockfileSize

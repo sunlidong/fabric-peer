@@ -10,14 +10,15 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/peer"
 	"fabricbypeer/common/ledger/blkstorage"
 	"fabricbypeer/common/ledger/blkstorage/fsblkstorage/msgs"
 	"fabricbypeer/common/ledger/util"
 	"fabricbypeer/common/ledger/util/leveldbhelper"
 	ledgerUtil "fabricbypeer/core/ledger/util"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 )
 
@@ -33,15 +34,15 @@ var indexCheckpointKey = []byte(indexCheckpointKeyStr)
 var errIndexEmpty = errors.New("NoBlockIndexed")
 
 type index interface {
-	getLastBlockIndexed() (uint64, error)
-	indexBlock(blockIdxInfo *blockIdxInfo) error
-	getBlockLocByHash(blockHash []byte) (*fileLocPointer, error)
-	getBlockLocByBlockNum(blockNum uint64) (*fileLocPointer, error)
-	getTxLoc(txID string) (*fileLocPointer, error)
-	getTXLocByBlockNumTranNum(blockNum uint64, tranNum uint64) (*fileLocPointer, error)
-	getBlockLocByTxID(txID string) (*fileLocPointer, error)
-	getTxValidationCodeByTxID(txID string) (peer.TxValidationCode, error)
-	isAttributeIndexed(attribute blkstorage.IndexableAttr) bool
+	getLastBlockIndexed() (uint64, error)                                               // 获取最后一个索引块
+	indexBlock(blockIdxInfo *blockIdxInfo) error                                        // 索引块
+	getBlockLocByHash(blockHash []byte) (*fileLocPointer, error)                        // 通过哈希获得块Loc
+	getBlockLocByBlockNum(blockNum uint64) (*fileLocPointer, error)                     // 通过块Num获得块Loc
+	getTxLoc(txID string) (*fileLocPointer, error)                                      // 获取 Txloc
+	getTXLocByBlockNumTranNum(blockNum uint64, tranNum uint64) (*fileLocPointer, error) // 获取 Tx Loc 通过块 Num Tran Num
+	getBlockLocByTxID(txID string) (*fileLocPointer, error)                             // 通过TxID获取块Loc
+	getTxValidationCodeByTxID(txID string) (peer.TxValidationCode, error)               // 通过TxID获取Tx验证代码
+	isAttributeIndexed(attribute blkstorage.IndexableAttr) bool                         // 是属性索引
 }
 
 type blockIdxInfo struct {
@@ -57,6 +58,7 @@ type blockIndex struct {
 	db            *leveldbhelper.DBHandle
 }
 
+// 新块指数
 func newBlockIndex(indexConfig *blkstorage.IndexConfig, db *leveldbhelper.DBHandle) (*blockIndex, error) {
 	indexItems := indexConfig.AttrsToIndex
 	logger.Debugf("newBlockIndex() - indexItems:[%s]", indexItems)
@@ -330,6 +332,7 @@ type fileLocPointer struct {
 	locPointer
 }
 
+// 新文件位置指针
 func newFileLocationPointer(fileSuffixNum int, beginningOffset int, relativeLP *locPointer) *fileLocPointer {
 	flp := &fileLocPointer{fileSuffixNum: fileSuffixNum}
 	flp.offset = beginningOffset + relativeLP.offset

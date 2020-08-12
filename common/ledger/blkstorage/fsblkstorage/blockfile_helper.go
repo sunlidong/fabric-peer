@@ -20,6 +20,7 @@ import (
 // constructCheckpointInfoFromBlockFiles scans the last blockfile (if any) and construct the checkpoint info
 // if the last file contains no block or only a partially written block (potentially because of a crash while writing block to the file),
 // this scans the second last file (if any)
+// 从块文件构造检查点信息
 func constructCheckpointInfoFromBlockFiles(rootDir string) (*checkpointInfo, error) {
 	logger.Debugf("Retrieving checkpoint info from block files")
 	var lastFileNum int
@@ -80,6 +81,8 @@ func constructCheckpointInfoFromBlockFiles(rootDir string) (*checkpointInfo, err
 // binarySearchFileNumForBlock locates the file number that contains the given block number.
 // This function assumes that the caller invokes this function with a block number that has been commited
 // For any uncommitted block, this function returns the last file present
+
+// 块的二进制搜索文件名
 func binarySearchFileNumForBlock(rootDir string, blockNum uint64) (int, error) {
 	cpInfo, err := constructCheckpointInfoFromBlockFiles(rootDir)
 	if err != nil {
@@ -107,6 +110,7 @@ func binarySearchFileNumForBlock(rootDir string, blockNum uint64) (int, error) {
 	return beginFile, nil
 }
 
+// 从文件中检索第一个块号
 func retriveFirstBlockNumFromFile(rootDir string, fileNum int) (uint64, error) {
 	s, err := newBlockfileStream(rootDir, fileNum, 0)
 	if err != nil {
@@ -124,6 +128,7 @@ func retriveFirstBlockNumFromFile(rootDir string, fileNum int) (uint64, error) {
 	return blockInfo.blockHeader.Number, nil
 }
 
+// 检索最后一个文件后缀
 func retrieveLastFileSuffix(rootDir string) (int, error) {
 	logger.Debugf("retrieveLastFileSuffix()")
 	biggestFileNum := -1
@@ -150,10 +155,12 @@ func retrieveLastFileSuffix(rootDir string) (int, error) {
 	return biggestFileNum, err
 }
 
+// 是块文件名
 func isBlockFileName(name string) bool {
 	return strings.HasPrefix(name, blockfilePrefix)
 }
 
+// 获取文件信息或恐慌
 func getFileInfoOrPanic(rootDir string, fileNum int) os.FileInfo {
 	filePath := deriveBlockfilePath(rootDir, fileNum)
 	fileInfo, err := os.Lstat(filePath)

@@ -23,6 +23,7 @@ import (
 )
 
 // blocksItr - an iterator for iterating over a sequence of blocks
+// blocksItr -迭代一系列块的迭代器
 type blocksItr struct {
 	mgr                  *blockfileMgr
 	maxBlockNumAvailable uint64
@@ -32,12 +33,14 @@ type blocksItr struct {
 	closeMarkerLock      *sync.Mutex
 }
 
+//  new 新块
 func newBlockItr(mgr *blockfileMgr, startBlockNum uint64) *blocksItr {
 	mgr.cpInfoCond.L.Lock()
 	defer mgr.cpInfoCond.L.Unlock()
 	return &blocksItr{mgr, mgr.cpInfo.lastBlockNumber, startBlockNum, nil, false, &sync.Mutex{}}
 }
 
+// 等待块
 func (itr *blocksItr) waitForBlock(blockNum uint64) uint64 {
 	itr.mgr.cpInfoCond.L.Lock()
 	defer itr.mgr.cpInfoCond.L.Unlock()
@@ -50,6 +53,7 @@ func (itr *blocksItr) waitForBlock(blockNum uint64) uint64 {
 	return itr.mgr.cpInfo.lastBlockNumber
 }
 
+// 初始化流
 func (itr *blocksItr) initStream() error {
 	var lp *fileLocPointer
 	var err error
@@ -62,6 +66,7 @@ func (itr *blocksItr) initStream() error {
 	return nil
 }
 
+// 应该关闭
 func (itr *blocksItr) shouldClose() bool {
 	itr.closeMarkerLock.Lock()
 	defer itr.closeMarkerLock.Unlock()
@@ -69,6 +74,8 @@ func (itr *blocksItr) shouldClose() bool {
 }
 
 // Next moves the cursor to next block and returns true iff the iterator is not exhausted
+
+// 下一个
 func (itr *blocksItr) Next() (ledger.QueryResult, error) {
 	if itr.maxBlockNumAvailable < itr.blockNumToRetrieve {
 		itr.maxBlockNumAvailable = itr.waitForBlock(itr.blockNumToRetrieve)
@@ -93,6 +100,8 @@ func (itr *blocksItr) Next() (ledger.QueryResult, error) {
 }
 
 // Close releases any resources held by the iterator
+
+// 关闭
 func (itr *blocksItr) Close() {
 	itr.mgr.cpInfoCond.L.Lock()
 	defer itr.mgr.cpInfoCond.L.Unlock()

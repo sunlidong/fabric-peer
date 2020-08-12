@@ -7,13 +7,15 @@ SPDX-License-Identifier: Apache-2.0
 package fsblkstorage
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/common"
 	ledgerutil "fabricbypeer/common/ledger/util"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/pkg/errors"
 )
 
+// 序列化块信息
 type serializedBlockInfo struct {
 	blockHeader *common.BlockHeader
 	txOffsets   []*txindexInfo
