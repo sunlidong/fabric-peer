@@ -16,6 +16,7 @@ import (
 )
 
 // ResetBlockStore drops the block storage index and truncates the blocks files for all channels/ledgers to genesis blocks
+// Reset Block Store删除块存储索引，并将所有通道/分类账的块文件截断为创世纪块
 func ResetBlockStore(blockStorageDir string) error {
 	if err := DeleteBlockStoreIndex(blockStorageDir); err != nil {
 		return err
@@ -52,6 +53,8 @@ func ResetBlockStore(blockStorageDir string) error {
 }
 
 // DeleteBlockStoreIndex deletes block store index file
+
+//  删除
 func DeleteBlockStoreIndex(blockStorageDir string) error {
 	conf := &Conf{blockStorageDir: blockStorageDir}
 	indexDir := conf.getIndexDir()
@@ -59,6 +62,7 @@ func DeleteBlockStoreIndex(blockStorageDir string) error {
 	return os.RemoveAll(indexDir)
 }
 
+// 重置为创世纪Blk
 func resetToGenesisBlk(ledgerDir string) error {
 	logger.Infof("Resetting ledger [%s] to genesis block", ledgerDir)
 	lastFileNum, err := retrieveLastFileSuffix(ledgerDir)
@@ -87,6 +91,7 @@ func resetToGenesisBlk(ledgerDir string) error {
 	return os.Truncate(zeroFilePath, genesisBlkEndOffset)
 }
 
+// 找回创世纪布拉克设置和复制
 func retrieveGenesisBlkOffsetAndMakeACopy(ledgerDir string) (string, int64, error) {
 	blockfilePath := deriveBlockfilePath(ledgerDir, 0)
 	blockfileStream, err := newBlockfileStream(ledgerDir, 0, 0)
@@ -111,6 +116,7 @@ func retrieveGenesisBlkOffsetAndMakeACopy(ledgerDir string) (string, int64, erro
 	return blockfilePath, endOffsetGenesisBlock, nil
 }
 
+// 断言是创世纪块
 func assertIsGenesisBlock(blockBytes []byte) error {
 	block, err := deserializeBlock(blockBytes)
 	if err != nil {
@@ -122,6 +128,7 @@ func assertIsGenesisBlock(blockBytes []byte) error {
 	return nil
 }
 
+// path  is exists
 func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
@@ -141,6 +148,7 @@ const (
 // directory. This file contains human readable string for the current block height. This function
 // only overwrites this information if the current block height is higher than the one recorded in
 // the existing file (if present). This helps in achieving fail-safe behviour of reset utility
+// 记录高度(如果比以前的记录大)
 func recordHeightIfGreaterThanPreviousRecording(ledgerDir string) error {
 	logger.Infof("Preparing to record current height for ledger at [%s]", ledgerDir)
 	checkpointInfo, err := constructCheckpointInfoFromBlockFiles(ledgerDir)
@@ -181,6 +189,7 @@ func recordHeightIfGreaterThanPreviousRecording(ledgerDir string) error {
 
 // LoadPreResetHeight searches the preResetHeight files for the specified ledgers and
 // returns a map of channelname to the last recorded block height during one of the reset operations.
+// 加载预复位高度
 func LoadPreResetHeight(blockStorageDir string, ledgerIDs []string) (map[string]uint64, error) {
 	logger.Debug("Loading Pre-reset heights")
 	preResetFilesMap, err := preResetHtFiles(blockStorageDir, ledgerIDs)
@@ -206,6 +215,7 @@ func LoadPreResetHeight(blockStorageDir string, ledgerIDs []string) (map[string]
 }
 
 // ClearPreResetHeight deletes the files that contain the last recorded reset heights for the specified ledgers
+// 预复位高度
 func ClearPreResetHeight(blockStorageDir string, ledgerIDs []string) error {
 	logger.Info("Clearing Pre-reset heights")
 	preResetFilesMap, err := preResetHtFiles(blockStorageDir, ledgerIDs)
@@ -221,6 +231,7 @@ func ClearPreResetHeight(blockStorageDir string, ledgerIDs []string) error {
 	return nil
 }
 
+// 预复位Ht文件
 func preResetHtFiles(blockStorageDir string, ledgerIDs []string) (map[string]string, error) {
 	if len(ledgerIDs) == 0 {
 		logger.Info("No active channels passed")

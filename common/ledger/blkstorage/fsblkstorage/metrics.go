@@ -16,6 +16,7 @@ type stats struct {
 	blockstorageCommitTime metrics.Histogram
 }
 
+// 新的统计数据
 func newStats(metricsProvider metrics.Provider) *stats {
 	stats := &stats{}
 	stats.blockchainHeight = metricsProvider.NewGauge(blockchainHeightOpts)
@@ -29,18 +30,21 @@ type ledgerStats struct {
 	ledgerid string
 }
 
+// ledger stats
 func (s *stats) ledgerStats(ledgerid string) *ledgerStats {
 	return &ledgerStats{
 		s, ledgerid,
 	}
 }
 
+// 更新区块链高度
 func (s *ledgerStats) updateBlockchainHeight(height uint64) {
 	// casting uint64 to float64 guarantees precision for the numbers upto 9,007,199,254,740,992 (1<<53)
 	// since, we are not expecting the blockchains of this scale anytime soon, we go ahead with this for now.
 	s.stats.blockchainHeight.With("channel", s.ledgerid).Set(float64(height))
 }
 
+//更新块存储提交时间
 func (s *ledgerStats) updateBlockstorageCommitTime(timeTaken time.Duration) {
 	s.stats.blockstorageCommitTime.With("channel", s.ledgerid).Observe(timeTaken.Seconds())
 }

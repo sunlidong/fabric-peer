@@ -31,6 +31,7 @@ func (e *ErrVersionMismatch) Error() string {
 }
 
 // IsVersionMismatch returns true if err is an ErrVersionMismatch
+// 是版本不匹配
 func IsVersionMismatch(err error) bool {
 	_, ok := err.(*ErrVersionMismatch)
 	return ok

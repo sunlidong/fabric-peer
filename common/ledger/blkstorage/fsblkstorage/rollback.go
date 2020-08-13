@@ -27,6 +27,7 @@ type rollbackMgr struct {
 }
 
 // Rollback reverts changes made to the block store beyond a given block number.
+//回滚将恢复对给定块号以外的块存储所做的更改。
 func Rollback(blockStorageDir, ledgerID string, targetBlockNum uint64, indexConfig *blkstorage.IndexConfig) error {
 
 	r, err := newRollbackMgr(blockStorageDir, ledgerID, indexConfig, targetBlockNum)
@@ -56,6 +57,7 @@ func Rollback(blockStorageDir, ledgerID string, targetBlockNum uint64, indexConf
 	return nil
 }
 
+//  创建回滚
 func newRollbackMgr(blockStorageDir, ledgerID string, indexConfig *blkstorage.IndexConfig, targetBlockNum uint64) (*rollbackMgr, error) {
 	r := &rollbackMgr{}
 
@@ -80,6 +82,7 @@ func newRollbackMgr(blockStorageDir, ledgerID string, indexConfig *blkstorage.In
 	return r, err
 }
 
+// 回滚块索引
 func (r *rollbackMgr) rollbackBlockIndex() error {
 	lastBlockNumber, err := r.indexStore.getLastBlockIndexed()
 	if err == errIndexEmpty {
@@ -114,6 +117,7 @@ func (r *rollbackMgr) rollbackBlockIndex() error {
 	return nil
 }
 
+// 删除索引项范围
 func (r *rollbackMgr) deleteIndexEntriesRange(startBlkNum, endBlkNum uint64) error {
 	// TODO: when more than half of the blocks' indices are to be deleted, it
 	// might be efficient to drop the whole index database rather than deleting
@@ -150,6 +154,7 @@ func (r *rollbackMgr) deleteIndexEntriesRange(startBlkNum, endBlkNum uint64) err
 	return r.indexStore.db.WriteBatch(batch, true)
 }
 
+// 添加要删除的索引项
 func addIndexEntriesToBeDeleted(batch *leveldbhelper.UpdateBatch, blockInfo *serializedBlockInfo, indexStore *blockIndex) error {
 	if indexStore.isAttributeIndexed(blkstorage.IndexableAttrBlockHash) {
 		batch.Delete(constructBlockHashKey(protoutil.BlockHeaderHash(blockInfo.blockHeader)))
@@ -173,10 +178,11 @@ func addIndexEntriesToBeDeleted(batch *leveldbhelper.UpdateBatch, blockInfo *ser
 	return nil
 }
 
+// 回滚文件块
 func (r *rollbackMgr) rollbackBlockFiles() error {
 
 	logger.Infof("Deleting checkpointInfo")
-	
+
 	if err := r.indexStore.db.Delete(blkMgrInfoKey, true); err != nil {
 		return err
 	}
@@ -214,6 +220,7 @@ func (r *rollbackMgr) rollbackBlockFiles() error {
 	return nil
 }
 
+// 计算端离集
 func calculateEndOffSet(ledgerDir string, targetBlkFileNum int, blockNum uint64) (int64, error) {
 	stream, err := newBlockfileStream(ledgerDir, targetBlkFileNum, 0)
 	if err != nil {
@@ -238,6 +245,7 @@ func calculateEndOffSet(ledgerDir string, targetBlkFileNum int, blockNum uint64)
 
 // ValidateRollbackParams performs necessary validation on the input given for
 // the rollback operation.
+// 验证回滚参数
 func ValidateRollbackParams(blockStorageDir, ledgerID string, targetBlockNum uint64) error {
 	logger.Infof("Validating the rollback parameters: ledgerID [%s], block number [%d]",
 		ledgerID, targetBlockNum)
@@ -253,6 +261,7 @@ func ValidateRollbackParams(blockStorageDir, ledgerID string, targetBlockNum uin
 
 }
 
+// 验证分类ID
 func validateLedgerID(ledgerDir, ledgerID string) error {
 	logger.Debugf("Validating the existence of ledgerID [%s]", ledgerID)
 	exists, _, err := util.FileExists(ledgerDir)
@@ -265,6 +274,7 @@ func validateLedgerID(ledgerDir, ledgerID string) error {
 	return nil
 }
 
+// 目标数量
 func validateTargetBlkNum(ledgerDir string, targetBlockNum uint64) error {
 	logger.Debugf("Validating the given block number [%d] against the ledger block height", targetBlockNum)
 	cpInfo, err := constructCheckpointInfoFromBlockFiles(ledgerDir)

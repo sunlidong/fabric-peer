@@ -7,10 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 package blockledger
 
 import (
+	"fabricbypeer/protoutil"
+
 	"github.com/golang/protobuf/proto"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	ab "github.com/hyperledger/fabric-protos-go/orderer"
-	"fabricbypeer/protoutil"
 )
 
 var closedChan chan struct{}
@@ -41,6 +42,8 @@ func (nfei *NotFoundErrorIterator) Close() {}
 // contents and metadata for a given ledger
 // XXX This will need to be modified to accept marshaled envelopes
 //     to accommodate non-deterministic marshaling
+
+// 创建 下一个块
 func CreateNextBlock(rl Reader, messages []*cb.Envelope) *cb.Block {
 	var nextBlockNumber uint64
 	var previousBlockHash []byte
@@ -79,6 +82,8 @@ func CreateNextBlock(rl Reader, messages []*cb.Envelope) *cb.Block {
 }
 
 // GetBlock is a utility method for retrieving a single block
+
+// get  block 获取 块
 func GetBlock(rl Reader, index uint64) *cb.Block {
 	iterator, _ := rl.Iterator(&ab.SeekPosition{
 		Type: &ab.SeekPosition_Specified{

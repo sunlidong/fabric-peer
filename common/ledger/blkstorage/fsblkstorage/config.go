@@ -43,10 +43,12 @@ func NewConf(blockStorageDir string, maxBlockfileSize int) *Conf {
 	return &Conf{blockStorageDir, maxBlockfileSize}
 }
 
+// get IndexDir
 func (conf *Conf) getIndexDir() string {
 	return filepath.Join(conf.blockStorageDir, IndexDir)
 }
 
+// get getchain    dir
 func (conf *Conf) getChainsDir() string {
 	return filepath.Join(conf.blockStorageDir, ChainsDir)
 }

@@ -14,9 +14,11 @@ import (
 	"fabricbypeer/common/ledger/util"
 	"fabricbypeer/common/ledger/util/leveldbhelper"
 	"fabricbypeer/common/metrics"
+
 	"github.com/pkg/errors"
 )
 
+// 数据格式版本
 func dataFormatVersion(indexConfig *blkstorage.IndexConfig) string {
 	// in version 2.0 we merged three indexable into one `IndexableAttrTxID`
 	if indexConfig.Contains(blkstorage.IndexableAttrTxID) {
@@ -26,6 +28,7 @@ func dataFormatVersion(indexConfig *blkstorage.IndexConfig) string {
 }
 
 // FsBlockstoreProvider provides handle to block storage - this is not thread-safe
+// Fs块存储提供程序提供了块存储的句柄——这不是线程安全的
 type FsBlockstoreProvider struct {
 	conf            *Conf
 	indexConfig     *blkstorage.IndexConfig
@@ -34,6 +37,7 @@ type FsBlockstoreProvider struct {
 }
 
 // NewProvider constructs a filesystem based block store provider
+// new Pro
 func NewProvider(conf *Conf, indexConfig *blkstorage.IndexConfig, metricsProvider metrics.Provider) (blkstorage.BlockStoreProvider, error) {
 	dbConf := &leveldbhelper.Conf{
 		DBPath:                conf.getIndexDir(),
@@ -63,6 +67,7 @@ func NewProvider(conf *Conf, indexConfig *blkstorage.IndexConfig, metricsProvide
 }
 
 // CreateBlockStore simply calls OpenBlockStore
+// 创建块存储
 func (p *FsBlockstoreProvider) CreateBlockStore(ledgerid string) (blkstorage.BlockStore, error) {
 	return p.OpenBlockStore(ledgerid)
 }
@@ -70,23 +75,29 @@ func (p *FsBlockstoreProvider) CreateBlockStore(ledgerid string) (blkstorage.Blo
 // OpenBlockStore opens a block store for given ledgerid.
 // If a blockstore is not existing, this method creates one
 // This method should be invoked only once for a particular ledgerid
+// 开放的块存储
 func (p *FsBlockstoreProvider) OpenBlockStore(ledgerid string) (blkstorage.BlockStore, error) {
 	indexStoreHandle := p.leveldbProvider.GetDBHandle(ledgerid)
 	return newFsBlockStore(ledgerid, p.conf, p.indexConfig, indexStoreHandle, p.stats), nil
 }
 
 // Exists tells whether the BlockStore with given id exists
+// 是否存在
 func (p *FsBlockstoreProvider) Exists(ledgerid string) (bool, error) {
 	exists, _, err := util.FileExists(p.conf.getLedgerBlockDir(ledgerid))
 	return exists, err
 }
 
 // List lists the ids of the existing ledgers
+
+// 列表
 func (p *FsBlockstoreProvider) List() ([]string, error) {
 	return util.ListSubdirs(p.conf.getChainsDir())
 }
 
 // Close closes the FsBlockstoreProvider
+
+// 关闭
 func (p *FsBlockstoreProvider) Close() {
 	p.leveldbProvider.Close()
 }
