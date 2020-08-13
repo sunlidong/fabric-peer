@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package history
 
 import (
-	"github.com/hyperledger/fabric-protos-go/common"
 	"fabricbypeer/common/flogging"
 	"fabricbypeer/common/ledger/blkstorage"
 	"fabricbypeer/common/ledger/dataformat"
@@ -16,16 +15,20 @@ import (
 	"fabricbypeer/core/ledger/kvledger/txmgmt/version"
 	"fabricbypeer/core/ledger/util"
 	protoutil "fabricbypeer/protoutil"
+
+	"github.com/hyperledger/fabric-protos-go/common"
 )
 
 var logger = flogging.MustGetLogger("history")
 
 // DBProvider provides handle to HistoryDB for a given channel
+// DBProvider为给定通道提供历史数据库的句柄
 type DBProvider struct {
 	leveldbProvider *leveldbhelper.Provider
 }
 
 // NewDBProvider instantiates DBProvider
+// //新的数据库提供程序实例化数据库提供程序
 func NewDBProvider(path string) (*DBProvider, error) {
 	logger.Debugf("constructing HistoryDBProvider dbPath=%s", path)
 	levelDBProvider, err := leveldbhelper.NewProvider(
@@ -163,6 +166,7 @@ func (d *DB) GetLastSavepoint() (*version.Height, error) {
 }
 
 // ShouldRecover implements method in interface kvledger.Recoverer
+// 应该恢复
 func (d *DB) ShouldRecover(lastAvailableBlock uint64) (bool, uint64, error) {
 	savepoint, err := d.GetLastSavepoint()
 	if err != nil {
