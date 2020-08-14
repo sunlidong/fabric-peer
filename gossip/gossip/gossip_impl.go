@@ -15,8 +15,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	pg "github.com/hyperledger/fabric-protos-go/gossip"
 	"fabricbypeer/gossip/api"
 	"fabricbypeer/gossip/comm"
 	"fabricbypeer/gossip/common"
@@ -30,6 +28,9 @@ import (
 	"fabricbypeer/gossip/metrics"
 	"fabricbypeer/gossip/protoext"
 	"fabricbypeer/gossip/util"
+
+	"github.com/golang/protobuf/proto"
+	pg "github.com/hyperledger/fabric-protos-go/gossip"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -39,33 +40,113 @@ const (
 	acceptChanSize       = 100
 )
 
+// 函数防范
 type channelRoutingFilterFactory func(channel.GossipChannel) filter.RoutingFilter
 
 // Node is a member of a gossip network
 type Node struct {
 	selfIdentity          api.PeerIdentityType
 	includeIdentityPeriod time.Time
-	certStore             *certStore
-	idMapper              identity.Mapper
-	presumedDead          chan common.PKIidType
-	disc                  discovery.Discovery
-	comm                  comm.Comm
-	selfOrg               api.OrgIdentityType
+	/*
+		certStore: 通过certPuller模块管理与储存PeerIdentity 类型节点身份信息，预处理Pull类型节点身份
+		信息，并交由certPuller模块具体处理。当交互处理完DataReq摘要请求消息时，执行RegisterMsgHook
+		回调函数，将请求节点的信息更新到pkiid-cert字典中。
+
+	*/
+	certStore *certStore
+
+	/*
+		节点身份管理器，负责维护 PKID2CERT字典，保存节点的PKI-ID 以及其节点身份表示。
+		其中，节点的PKI-ID是调用mcs.GetPK-ID,身份证书以及过期时间。
+	*/
+	idMapper     identity.Mapper
+	presumedDead chan common.PKIidType
+
+	/*
+		Gossip服务： discover模块 ，负责维护通道中其他Peer节点的状态和成员关系，使用deadLastTS和
+		aliveLastTS时间戳列表来保存离线节点和存活节点发生联系的时间戳，使用 aliveMemBership
+		与deadMembership成员关系储存对象管理存活节点和离线节点的成员关系消息列表，同时使用id2Member
+		字典管理联系过 的节点，其中键都是PKI-ID，同时，discovery模块还处理alivemsg类型 节点存活
+		MemReq类型成员关系请求消息和MemRes类型成员关系相应消息，使用aliveMsgStore消息储存对象保存
+		以上3类消息中肥壮的AliveMsg消息，并更新到本地节点的相关信息列表中。
+
+		函数 在创建 discovery 模块后启动了5个goroutine，用于支持discovery模块处理消息与管理成员消息
+		用于支持 discovery 模块处理消息与管理成员
+
+			1. go. d.periodicalSendAlive():周期性（默认5秒）发送AliveMsg消息，基于commm模块
+			通知组织内的其他Peer节点。
+
+			2. go d.periodicalCheckAlive（）：周期性地（默认2.5秒）遍历检查 aliveLastTS时间戳列表。
+			如果发现节点事件差大于阈值，25秒，则认为该节点可能离线，那么此时应该调用模块 d.expire
+			DeadMemberS()方法，更新相关列表以清理该节点，如果 deadLastTS时间戳列表，并关闭与该节点
+			的连接
+
+			3. go d.handleMessages() ， 建立消息处理循环并使用 select语句阻塞等待，监听discAdapter
+			适配器模块的discoverAdapter.通道消息，包括AliveMsg消息，MemReq消息和MemRes消息。
+			接着，调用d.handleMessage()方法处理消息，同时监听 d.toDieChan通道上的关闭消息。
+
+			4. go d.peiodicalReconnerToDead:周期性的默认25秒，通过 discAdapte适配器发送ping请求，
+			试图重新连接deadLastTS时间戳列表中已经离线的Peer节点，如果发现能够重新连接该离线节点，
+			则通过 dis 适配器模块构造并发送MemReq消息，以请求获取节点成员关系消息。
+
+			5. go d.handlePresumedDeadPeers*(), 处理可能已经离线的节点，建立消息处理循环并
+			使用select语句阻塞等待，监听 d.comm.PresumedDead()方法返回discovery-Adapter.p
+			resumedDead通道信息，调用 isAlive()方法检查该接待你在线状态，如果aliveLast
+
+
+	*/
+	disc discovery.Discovery
+
+	/*
+		Gossip 服务实例通信模块，向其他模块提供通信接口以实现Peer节点之间的通信。
+		NewGossipService() 函数 与 createCommWithServer() 函数，创建通信实例对象，并
+		注册到Peer节点GPRC服务器上，对外提供GossipStream() Ping()grpc 服务接口，用于建立服务连接，
+		支撑其他模块的通信。
+	*/
+	comm    comm.Comm
+	selfOrg api.OrgIdentityType
 	*comm.ChannelDeMultiplexer
-	logger            util.Logger
-	stopSignal        *sync.WaitGroup
-	conf              *Config
-	toDieChan         chan struct{}
-	stopFlag          int32
-	emitter           batchingEmitter
-	discAdapter       *discoveryAdapter
-	secAdvisor        api.SecurityAdvisor
-	chanState         *channelState
+	logger     util.Logger
+	stopSignal *sync.WaitGroup
+	conf       *Config
+	toDieChan  chan struct{}
+	stopFlag   int32
+	/*
+				Gossip 服务实例上的批量消息发送模块，为其他模块提供发送Gossip消息的接口。为了提供消息的发送效率。
+		emitter 模块分类过滤消息缓冲区的消息集合，分批打包发送给其他节点。同时，执行一周期性的检查缓冲区消息是否满足发送
+		的条件，并执行回调函数以分类分批发送消息到其他节点。
+	*/
+	emitter batchingEmitter
+
+	/*
+		discAdapter:
+		类型适配器模块，用于discovery 模块接收， 过滤，转发消息。该适配器模块封装了Comm通信模块用于
+		等消息的通信，并定义了discovery模块的gossipfunc（）分发数据函数 和forwoardfunc 转发数据函数
+		他们都将消息添加到emitter模块中请求发送。定义了消息过滤器用于过滤节点，同事适配器还提供incChan
+		用于接收AliveMsg类型，MemReq,MemRes类型消息
+	*/
+	discAdapter *discoveryAdapter
+	secAdvisor  api.SecurityAdvisor
+	chanState   *channelState
+	/*
+		类型的安全适配器模块，封装了Security-Advisor安全辅助组件，idMapper模块，MessageCrypoService
+		消息加密服务组件，通信模块，日志模块，Peer节点身份证书信息，可提供身份管理，消息加密，签名与验证
+		等安全服务
+
+	*/
 	disSecAdap        *discoverySecurityAdapter
 	mcs               api.MessageCryptoService
 	stateInfoMsgStore msgstore.MessageStore
-	certPuller        pull.Mediator
-	gossipMetrics     *metrics.GossipMetrics
+	/*
+		certPuller： 周期性的发送Pull类型节点身份信息，请求拉取PeerIDentity类型节点身份信息，
+		并通过自身的engine模块管理储存消息摘要，具体处理4类底层交互的Pull类型消息（Hello消息，DataDig摘要消息，DataReq摘要请求消息
+		与DataUpdate摘要更新消息
+
+		）
+
+	*/
+	certPuller    pull.Mediator
+	gossipMetrics *metrics.GossipMetrics
 }
 
 // New creates a gossip instance attached to a gRPC server
@@ -341,7 +422,7 @@ func (g *Node) handleMessage(m protoext.ReceivedMessage) {
 		return
 	}
 
-	if protoext.IsChannelRestricted(msg.GossipMessage) {
+	if protoext.IsChannelRestricted(msg.GossipMessage) {	
 		if gc := g.chanState.lookupChannelForMsg(m); gc == nil {
 			// If we're not in the channel, we should still forward to peers of our org
 			// in case it's a StateInfo message

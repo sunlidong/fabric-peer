@@ -1217,6 +1217,8 @@ func secureDialOpts(credSupport *comm.CredentialSupport) func() []grpc.DialOptio
 // 2. Init the message crypto service;
 // 3. Init the security advisor;
 // 4. Init gossip related struct.
+
+// 初始化 gossip 服务
 func initGossipService(
 	policyMgr policies.ChannelPolicyManagerGetter,
 	metricsProvider metrics.Provider,
