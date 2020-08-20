@@ -12,10 +12,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/ledger/rwset"
-	"github.com/hyperledger/fabric-protos-go/msp"
-	"github.com/hyperledger/fabric-protos-go/peer"
 	vsccErrors "fabricbypeer/common/errors"
 	"fabricbypeer/common/metrics"
 	commonutil "fabricbypeer/common/util"
@@ -25,6 +21,11 @@ import (
 	pvtdatacommon "fabricbypeer/gossip/privdata/common"
 	"fabricbypeer/gossip/util"
 	"fabricbypeer/protoutil"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go/ledger/rwset"
+	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/hyperledger/fabric-protos-go/peer"
 )
 
 type sleeper struct {
@@ -166,8 +167,7 @@ type PvtdataProvider struct {
 	skipPullingInvalidTransactions          bool
 	idDeserializerFactory                   IdentityDeserializerFactory
 	fetcher                                 Fetcher
-
-	sleeper sleeper
+	sleeper                                 sleeper
 }
 
 // RetrievePvtdata is passed a list of private data items from a block,
@@ -535,7 +535,6 @@ func getTxIDBySeqInBlock(seqInBlock uint64, pvtdataToRetrieve []*ledger.TxPvtdat
 			return txPvtdataItem.TxID
 		}
 	}
-
 	return ""
 }
 

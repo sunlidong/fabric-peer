@@ -14,6 +14,7 @@ import (
 
 	"fabricbypeer/gossip/api"
 	"fabricbypeer/gossip/common"
+
 	errors "github.com/pkg/errors"
 )
 

@@ -35,11 +35,12 @@ func (id PKIidType) IsNotSameFilter(that PKIidType) bool {
 type MessageAcceptor func(interface{}) bool
 
 // Payload defines an object that contains a ledger block
+// //有效负载定义一个包含分类器块的对象
 type Payload struct {
-	ChannelID ChannelID // The channel's ID of the block
-	Data      []byte    // The content of the message, possibly encrypted or signed
-	Hash      string    // The message hash
-	SeqNum    uint64    // The message sequence number
+	ChannelID ChannelID // The channel's ID of the block 通道块的ID
+	Data      []byte    // The content of the message, possibly encrypted or signed 消息的内容，可能经过加密或签名
+	Hash      string    // The message hash 消息散列
+	SeqNum    uint64    // The message sequence number 消息序列号
 }
 
 // ChannelID defines the identity representation of a chain

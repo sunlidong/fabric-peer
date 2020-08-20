@@ -18,6 +18,7 @@ import (
 	"fabricbypeer/core/comm"
 	"fabricbypeer/gossip/api"
 	"fabricbypeer/gossip/common"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -34,6 +35,7 @@ func createCAOrPanic() tlsgen.CA {
 }
 
 // CreateGRPCLayer returns a new gRPC server with associated port, TLS certificates, SecureDialOpts and DialOption
+// // CreateGRPCLayer返回一个新的gRPC服务器，带有关联的端口、TLS证书、securedialopt和拨号选项
 func CreateGRPCLayer() (port int, gRPCServer *comm.GRPCServer, certs *common.TLSCertificates,
 	secureDialOpts api.PeerSecureDialOpts, dialOpts []grpc.DialOption) {
 
@@ -93,7 +95,7 @@ func CreateGRPCLayer() (port int, gRPCServer *comm.GRPCServer, certs *common.TLS
 	}
 	portInt, err := strconv.Atoi(portString)
 	if err != nil {
-		panic(err)
+		panic(err) 	
 	}
 
 	return portInt, gRPCServer, certs, secureDialOpts, dialOpts

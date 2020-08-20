@@ -9,17 +9,21 @@ package discovery
 import (
 	"fmt"
 
-	proto "github.com/hyperledger/fabric-protos-go/gossip"
 	"fabricbypeer/gossip/common"
 	"fabricbypeer/gossip/protoext"
+
+	proto "github.com/hyperledger/fabric-protos-go/gossip"
 )
 
 // CryptoService is an interface that the discovery expects to be implemented and passed on creation
+// // Crypto Service是一个接口，发现希望在创建时实现并传递该接口
 type CryptoService interface {
 	// ValidateAliveMsg validates that an Alive message is authentic
+	// Msg验证活着的消息是真实的
 	ValidateAliveMsg(message *protoext.SignedGossipMessage) bool
 
 	// SignMessage signs a message
+	// //签名消息签名消息
 	SignMessage(m *proto.GossipMessage, internalEndpoint string) *proto.Envelope
 }
 
@@ -56,19 +60,24 @@ type CommService interface {
 	Ping(peer *NetworkMember) bool
 
 	// Accept returns a read-only channel for membership messages sent from remote peers
+	// // Accept返回一个只读通道，用于从远程对等点发送的成员资格消息
 	Accept() <-chan protoext.ReceivedMessage
 
 	// PresumedDead returns a read-only channel for peers that are presumed to be dead
+	// //“假定死亡”为假定死亡的对等端返回一个只读通道
 	PresumedDead() <-chan common.PKIidType
 
 	// CloseConn orders to close the connection with a certain peer
+	// 关闭Conn命令关闭与某个对等点的连接
 	CloseConn(peer *NetworkMember)
 
 	// Forward sends message to the next hop, excluding the hop
 	// from which message was initially received
+	// 转发将消息发送到下一跳，但不包括最初接收消息的那一跳
 	Forward(msg protoext.ReceivedMessage)
 
 	// IdentitySwitch returns a read-only channel about identity change events
+	// //身份开关返回关于身份更改事件的只读通道
 	IdentitySwitch() <-chan common.PKIidType
 }
 
