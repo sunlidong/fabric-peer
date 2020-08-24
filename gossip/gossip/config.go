@@ -17,6 +17,7 @@ import (
 	"fabricbypeer/gossip/election"
 	"fabricbypeer/gossip/gossip/algo"
 	"fabricbypeer/gossip/util"
+
 	"github.com/spf13/viper"
 )
 

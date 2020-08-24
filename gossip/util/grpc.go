@@ -95,7 +95,7 @@ func CreateGRPCLayer() (port int, gRPCServer *comm.GRPCServer, certs *common.TLS
 	}
 	portInt, err := strconv.Atoi(portString)
 	if err != nil {
-		panic(err) 	
+		panic(err)
 	}
 
 	return portInt, gRPCServer, certs, secureDialOpts, dialOpts

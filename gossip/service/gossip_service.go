@@ -288,7 +288,7 @@ type Support struct {
 }
 
 // InitializeChannel allocates the state provider and should be invoked once per channel per execution
-func (g *GossipService) InitializeChannel(channelID string, ordererSource *orderers.ConnectionSource, store *transientstore.Store, support Support) {
+func (g *GossipService) InitializeChannel(channelID string, ordererSource *orderers.ConnectionSource, store *transientstore.Store, support Support) { 
 	g.lock.Lock()
 	defer g.lock.Unlock()
 	// Initialize new state provider for given committer
