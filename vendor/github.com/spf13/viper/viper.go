@@ -1325,8 +1325,6 @@ func (v *Viper) Set(key string, value interface{}) {
 // ReadInConfig will discover and load the configuration file from disk
 // and key/value stores, searching in one of the defined paths.
 func ReadInConfig() error { return v.ReadInConfig() }
-
-//加载 orderer 。yaml 配置文件
 func (v *Viper) ReadInConfig() error {
 	jww.INFO.Println("Attempting to read in config file")
 	filename, err := v.getConfigFile()
